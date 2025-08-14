@@ -108,29 +108,42 @@ namespace NodeJSClient.Forms
 
 
             //~~Create userControlDays~~
+            DateTime dayDate;
             int _ID = 1;
             if (daysInMonth == 30) // For 30 days in month it will need 5 additional days to fill the last row
             {
                 for (int day = 1; day <= daysInMonth + 5; day++)
                 {
-                    var dayControl = new userControlDays(day, _ID);
+                    dayDate = DateTime.Now.AddDays(day - 1);
+                    string formatted = dayDate.ToString("dddd, dd MMMM yyyy");  // Format: Weekday, Day Month Year
+                    var dayControl = new userControlDays(day, _ID, DateTime.Now.AddDays(day - 1), formatted); // Pass the date for each next days control    
+                                                                            
+                    
                     Padding padding = new Padding(margin);
                     dayControl.Margin = padding;
                     dayControl.Size = new Size(controlWidth, controlHeight);
 
                     dayContainer.Controls.Add(dayControl);
+
+
                     _ID++;
                 }
             }
             else // For 31 days in month it will need 4 additional days to fill the last row
                 for (int day = 1; day <= daysInMonth + 4; day++)
                 {
-                    var dayControl = new userControlDays(day, _ID);
+                    dayDate = DateTime.Now.AddDays(day - 1);
+                    string formatted = dayDate.ToString("dddd, dd MMMM yyyy");  // Format: Weekday, Day Month Year
+                    var dayControl = new userControlDays(day, _ID, DateTime.Now.AddDays(day - 1), formatted); // Pass the date for each next days control    
+
+
                     Padding padding = new Padding(margin);
                     dayControl.Margin = padding;
                     dayControl.Size = new Size(controlWidth, controlHeight);
 
                     dayContainer.Controls.Add(dayControl);
+
+
                     _ID++;
                 }
         }

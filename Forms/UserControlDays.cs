@@ -11,7 +11,7 @@ namespace NodeJSClient
     {
         public static List<userControlDays> AllInstances { get; } = new List<userControlDays>();
         public int InstanceNumber { get; private set; }
-        static int UCDCount = 0;
+        static int UCDCount;
         public Color originalBackColor { get; private set; }
 
         private Label topRightLabel;
@@ -24,7 +24,13 @@ namespace NodeJSClient
         public bool highlightDay { get; set; } = false;
         public static CustomSwitch GlobalCustomSwitchInstance;
 
-        public userControlDays(int dayNum, int id)
+        protected DateTime dateTime { get; private set; }
+        protected string toStringDay { get; private set; }
+        protected string toStringMonth { get; private set; }
+        protected string toStringYear { get; private set; }
+
+
+        public userControlDays(int dayNum, int id, DateTime dateTime, string formattedDateTime)
         {
             InitializeComponent();
             this.dayNum = dayNum;
@@ -33,18 +39,21 @@ namespace NodeJSClient
 
             AllInstances.Add(this);
 
+            this.MouseClick += UserControlDays_Click;
             this.MouseEnter += DayControl_MouseEnter;
             this.MouseLeave += DayControl_MouseLeave;
 
             InitializeTopRightLabel();
             highlightControl();
+
+            SetFormattedDateTime();
         }
 
         private void UserControlDays_Load(object sender, EventArgs e) { }
 
-        private void UserControlDays_Click(object sender, EventArgs e)
+        protected void UserControlDays_Click(object sender, EventArgs e)
         {
-            MessageBox.Show($"Day clicked! for id:{this.UCDID}");
+            MessageBox.Show($"Clicked day: {this.toStringDay}/{this.toStringMonth}/{this.toStringYear}");
         }
 
         private void InitializeTopRightLabel()
@@ -105,7 +114,7 @@ namespace NodeJSClient
         {
             var control = sender as userControlDays;
 
-           
+
 
             if (control != null)
             {
@@ -148,5 +157,19 @@ namespace NodeJSClient
                 }
             }
         }
+
+
+        //~~Data~~  
+
+        private void SetFormattedDateTime()
+        {
+            this.dateTime = DateTime.Now.AddDays(dayNum - 1);
+            this.toStringDay = dateTime.ToString("dddd");
+            this.toStringMonth = dateTime.ToString("MMMM");
+            this.toStringYear = dateTime.ToString("yyyy");
+        }
     }
+
+
+
 }

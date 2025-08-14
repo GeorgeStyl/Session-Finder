@@ -132,9 +132,9 @@ namespace NodeJSClient.Forms
         private CustomSwitch customSwitch1;
         private Button PreviousBtn;
         private Button button2;
-        private Label Date;
         private CustomSwitch customSwitch2;
         protected FlowLayoutPanel dayContainer;
         protected Panel TopPanel;
+        protected Label Date;
     }
 }
