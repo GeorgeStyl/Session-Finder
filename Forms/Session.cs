@@ -12,15 +12,42 @@ namespace NodeJSClient.Forms
     {
         private readonly DayInfoService _dayInfoService;
 
+        private const int MinFormWidth = 400;
+        private const int VerticalOffset = 5;  // Move window a bit up to avoid taskbar overlap
+
         public Session()
         {
             InitializeComponent();
+            this.StartPosition = FormStartPosition.Manual; // manual control over position
+
+
+            // Adjust size and initial position on load
+            this.Load += (s, e) => AdjustFormSizeAndPosition();
+
 
             NodeJSClient.Forms.CustomSwitch.GlobalCustomSwitchInstance = customSwitch1;
 
             Session_InitializeLayout(); // run layout code ONCE here
         }
 
+        private void AdjustFormSizeAndPosition()
+        {
+            // Get the screen where the form is currently displayed
+            var screen = Screen.FromControl(this);
+
+            // Set minimum width
+            this.MinimumSize = new Size(MinFormWidth, this.MinimumSize.Height);
+
+            // Lock height to the screen's working area
+            int maxHeight = screen.WorkingArea.Height;
+            this.Height = maxHeight;
+
+            // Keep horizontal position centered, vertical slightly above center
+            int newX = screen.WorkingArea.X + (screen.WorkingArea.Width - this.Width) / 2;
+            int newY = screen.WorkingArea.Y + (screen.WorkingArea.Height - this.Height) / 2 - VerticalOffset;
+
+            this.Location = new Point(newX, newY);
+        }
 
         public Session(DayInfoService service) : this()
         {
@@ -167,25 +194,6 @@ namespace NodeJSClient.Forms
             Date.Text = DateTime.Now.ToString("MMMM / yyyy", System.Globalization.CultureInfo.InvariantCulture);
         }
 
-        private void InitializeTopFlowLayoutPanel()
-        {
-            TopFlayoutPanel.Controls.Clear();
-            // Add custom switch
-            TopFlayoutPanel.Controls.Add(customSwitch1);
-            // Add Previous button
-            PreviousBtn.Text = "<-";
-            PreviousBtn.Size = new Size(78, 25);
-            TopFlayoutPanel.Controls.Add(PreviousBtn);
-            // Add Date label
-            TopFlayoutPanel.Controls.Add(Date);
-            // Add Next button
-            button2.Text = "->";
-            button2.Size = new Size(78, 25);
-            TopFlayoutPanel.Controls.Add(button2);
-        }
-
-
-
         private void Date_Click(object sender, EventArgs e)
         {
             // Do nothing
@@ -207,6 +215,40 @@ namespace NodeJSClient.Forms
         }
 
         private void TopFlayoutPanel_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void TopPanel_Paint(object sender, PaintEventArgs e)
+        {
+            myPanel_Resize(sender, e);
+        }
+
+        private void myPanel_Resize(object sender, EventArgs e)
+        {
+            Panel panel = sender as Panel;
+
+            // Vertically center multiple children
+            foreach (Control child in panel.Controls)
+            {
+                if (child.Tag != null && child.Tag.ToString() == "centerVertically")
+                {
+                    child.Top = (panel.Height - child.Height) / 2;
+                }
+            }
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            this.checkBox1_CheckedChanged(sender, e);
+        }
+
+        private void checkBox2_CheckedChanged(object sender, EventArgs e)
         {
 
         }
