@@ -24,9 +24,8 @@ namespace NodeJSClient.Forms
             this.button2 = new System.Windows.Forms.Button();
             this.WeekDaysFlowLayout = new System.Windows.Forms.FlowLayoutPanel();
             this.TopPanel = new System.Windows.Forms.Panel();
-            this.MultipleTargets = new System.Windows.Forms.CheckBox();
-            this.SingleTarget = new System.Windows.Forms.CheckBox();
             this.customSwitch1 = new NodeJSClient.Forms.CustomSwitch();
+            this.customSwitch2 = new NodeJSClient.Forms.CustomSwitch();
             this.TopPanel.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -42,7 +41,7 @@ namespace NodeJSClient.Forms
             // PreviousBtn
             // 
             this.PreviousBtn.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.PreviousBtn.Location = new System.Drawing.Point(320, 30);
+            this.PreviousBtn.Location = new System.Drawing.Point(408, 30);
             this.PreviousBtn.Name = "PreviousBtn";
             this.PreviousBtn.Size = new System.Drawing.Size(69, 39);
             this.PreviousBtn.TabIndex = 4;
@@ -53,7 +52,7 @@ namespace NodeJSClient.Forms
             // Date
             // 
             this.Date.BackColor = System.Drawing.Color.Beige;
-            this.Date.Location = new System.Drawing.Point(427, 6);
+            this.Date.Location = new System.Drawing.Point(493, 6);
             this.Date.Margin = new System.Windows.Forms.Padding(13, 0, 13, 0);
             this.Date.Name = "Date";
             this.Date.Size = new System.Drawing.Size(295, 76);
@@ -64,7 +63,7 @@ namespace NodeJSClient.Forms
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(751, 30);
+            this.button2.Location = new System.Drawing.Point(804, 30);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(78, 39);
             this.button2.TabIndex = 5;
@@ -84,8 +83,7 @@ namespace NodeJSClient.Forms
             // 
             // TopPanel
             // 
-            this.TopPanel.Controls.Add(this.MultipleTargets);
-            this.TopPanel.Controls.Add(this.SingleTarget);
+            this.TopPanel.Controls.Add(this.customSwitch2);
             this.TopPanel.Controls.Add(this.button2);
             this.TopPanel.Controls.Add(this.Date);
             this.TopPanel.Controls.Add(this.PreviousBtn);
@@ -95,28 +93,6 @@ namespace NodeJSClient.Forms
             this.TopPanel.TabIndex = 4;
             this.TopPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.TopPanel_Paint);
             // 
-            // MultipleTargets
-            // 
-            this.MultipleTargets.AutoSize = true;
-            this.MultipleTargets.Location = new System.Drawing.Point(3, 62);
-            this.MultipleTargets.Name = "MultipleTargets";
-            this.MultipleTargets.Size = new System.Drawing.Size(125, 20);
-            this.MultipleTargets.TabIndex = 0;
-            this.MultipleTargets.Text = "Multiple Targets";
-            this.MultipleTargets.UseVisualStyleBackColor = true;
-            this.MultipleTargets.CheckedChanged += new System.EventHandler(this.checkBox2_CheckedChanged);
-            // 
-            // SingleTarget
-            // 
-            this.SingleTarget.AutoSize = true;
-            this.SingleTarget.Location = new System.Drawing.Point(3, 20);
-            this.SingleTarget.Name = "SingleTarget";
-            this.SingleTarget.Size = new System.Drawing.Size(110, 20);
-            this.SingleTarget.TabIndex = 0;
-            this.SingleTarget.Text = "Single Target";
-            this.SingleTarget.UseVisualStyleBackColor = true;
-            this.SingleTarget.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
-            // 
             // customSwitch1
             // 
             this.customSwitch1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
@@ -125,6 +101,14 @@ namespace NodeJSClient.Forms
             this.customSwitch1.Size = new System.Drawing.Size(0, 61);
             this.customSwitch1.TabIndex = 3;
             this.customSwitch1.Load += new System.EventHandler(this.customSwitch1_Load);
+            // 
+            // customSwitch2
+            // 
+            this.customSwitch2.Location = new System.Drawing.Point(91, 16);
+            this.customSwitch2.Name = "customSwitch2";
+            this.customSwitch2.Size = new System.Drawing.Size(162, 66);
+            this.customSwitch2.TabIndex = 0;
+            this.customSwitch2.Load += new System.EventHandler(this.customSwitch2_Load);
             // 
             // Session
             // 
@@ -141,7 +125,6 @@ namespace NodeJSClient.Forms
             this.Text = "Session";
             this.Load += new System.EventHandler(this.Session_Load);
             this.TopPanel.ResumeLayout(false);
-            this.TopPanel.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -152,7 +135,6 @@ namespace NodeJSClient.Forms
         private Button button2;
         private Label Date;
         private Panel TopPanel;
-        private CheckBox MultipleTargets;
-        private CheckBox SingleTarget;
+        private CustomSwitch customSwitch2;
     }
 }

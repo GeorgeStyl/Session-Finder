@@ -15,6 +15,9 @@ namespace NodeJSClient.Forms
         private const int MinFormWidth = 400;
         private const int VerticalOffset = 5;  // Move window a bit up to avoid taskbar overlap
 
+        private userControlDays _activeDayControl = null;
+
+
         public Session()
         {
             InitializeComponent();
@@ -25,10 +28,12 @@ namespace NodeJSClient.Forms
             this.Load += (s, e) => AdjustFormSizeAndPosition();
 
 
-            NodeJSClient.Forms.CustomSwitch.GlobalCustomSwitchInstance = customSwitch1;
+           
 
             Session_InitializeLayout(); // run layout code ONCE here
         }
+
+
 
         private void AdjustFormSizeAndPosition()
         {
@@ -83,7 +88,6 @@ namespace NodeJSClient.Forms
             InitilizeDateLabel();
 
             // 4️) Initialize the top flow layout panel
-
         }
 
         private void flowLayoutPanel1_Paint(object sender, PaintEventArgs e)
@@ -178,7 +182,7 @@ namespace NodeJSClient.Forms
 
         private void WeekDaysFlowLayout_Paint(object sender, PaintEventArgs e)
         {
-         
+
         }
 
         private void InitilizeDateLabel()
@@ -186,18 +190,14 @@ namespace NodeJSClient.Forms
             // Ignore Click and hover event
             Date.Enabled = true;
             Date.Cursor = Cursors.Default; // remove hand cursor if set
-        
+
             //Date.Size = new Size(200, 40);    
-            Date.Font = new Font("Segoe UI", 19, FontStyle.Bold);  
-            Date.TextAlign = ContentAlignment.MiddleLeft;       
+            Date.Font = new Font("Segoe UI", 19, FontStyle.Bold);
+            Date.TextAlign = ContentAlignment.MiddleLeft;
 
             Date.Text = DateTime.Now.ToString("MMMM / yyyy", System.Globalization.CultureInfo.InvariantCulture);
         }
 
-        private void Date_Click(object sender, EventArgs e)
-        {
-            // Do nothing
-        }
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -243,12 +243,7 @@ namespace NodeJSClient.Forms
             }
         }
 
-        private void checkBox1_CheckedChanged(object sender, EventArgs e)
-        {
-            this.checkBox1_CheckedChanged(sender, e);
-        }
-
-        private void checkBox2_CheckedChanged(object sender, EventArgs e)
+        private void customSwitch2_Load(object sender, EventArgs e)
         {
 
         }
