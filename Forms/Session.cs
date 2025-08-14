@@ -12,8 +12,8 @@ namespace NodeJSClient.Forms
     {
         private readonly DayInfoService _dayInfoService;
 
-        private const int MinFormWidth = 400;
-        private const int VerticalOffset = 5;  // Move window a bit up to avoid taskbar overlap
+        protected const int MinFormWidth = 400;
+        protected const int VerticalOffset = 5;  // Move window a bit up to avoid taskbar overlap
 
         private userControlDays _activeDayControl = null;
 
@@ -28,14 +28,16 @@ namespace NodeJSClient.Forms
             this.Load += (s, e) => AdjustFormSizeAndPosition();
 
 
-           
-
             Session_InitializeLayout(); // run layout code ONCE here
         }
 
+        public Session(DayInfoService service) : this()
+        {
+            _dayInfoService = service;
+        }
 
 
-        private void AdjustFormSizeAndPosition()
+        protected void AdjustFormSizeAndPosition()
         {
             // Get the screen where the form is currently displayed
             var screen = Screen.FromControl(this);
@@ -54,12 +56,8 @@ namespace NodeJSClient.Forms
             this.Location = new Point(newX, newY);
         }
 
-        public Session(DayInfoService service) : this()
-        {
-            _dayInfoService = service;
-        }
-
-        private void Session_InitializeLayout()
+   
+        protected void Session_InitializeLayout()
         {
             this.StartPosition = FormStartPosition.CenterScreen;
 
@@ -94,7 +92,7 @@ namespace NodeJSClient.Forms
         {
         }
 
-        private void displayDays()
+        protected virtual void displayDays()
         {
             dayContainer.Controls.Clear();
 
@@ -137,7 +135,7 @@ namespace NodeJSClient.Forms
                 }
         }
 
-        private void InitializeWeekDaysLabels()
+        protected void InitializeWeekDaysLabels()
         {
             string[] weekdays = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
 
@@ -185,7 +183,7 @@ namespace NodeJSClient.Forms
 
         }
 
-        private void InitilizeDateLabel()
+        protected virtual void InitilizeDateLabel()
         {
             // Ignore Click and hover event
             Date.Enabled = true;
