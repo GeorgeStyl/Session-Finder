@@ -29,6 +29,17 @@ namespace NodeJSClient.Forms
 
 
             Session_InitializeLayout(); // run layout code ONCE here
+
+
+
+          
+
+            // Debug: list all controls
+            foreach (Control c in this.Controls)
+            {
+                Console.WriteLine(c.Name + " - Visible: " + c.Visible);
+            }
+
         }
 
         public Session(DayInfoService service) : this()

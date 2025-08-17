@@ -88,6 +88,12 @@
     <Compile Include="Forms\CustomSwitch.Designer.cs">
       <DependentUpon>CustomSwitch.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\TestForm.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\TestForm.Designer.cs">
+      <DependentUpon>TestForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\UserDefaultSettings.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -139,6 +145,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\SingInForm.resx">
       <DependentUpon>SingInForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\TestForm.resx">
+      <DependentUpon>TestForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\UserControlDays.resx">
       <DependentUpon>UserControlDays.cs</DependentUpon>

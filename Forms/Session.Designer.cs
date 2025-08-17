@@ -23,8 +23,8 @@ namespace NodeJSClient.Forms
             this.button2 = new System.Windows.Forms.Button();
             this.WeekDaysFlowLayout = new System.Windows.Forms.FlowLayoutPanel();
             this.TopPanel = new System.Windows.Forms.Panel();
-            this.customSwitch2 = new NodeJSClient.Forms.CustomSwitch();
             this.customSwitch1 = new NodeJSClient.Forms.CustomSwitch();
+            this.customSwitch2 = new NodeJSClient.Forms.CustomSwitch();
             this.TopPanel.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -39,7 +39,6 @@ namespace NodeJSClient.Forms
             // 
             // PreviousBtn
             // 
-            this.PreviousBtn.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.PreviousBtn.Location = new System.Drawing.Point(408, 30);
             this.PreviousBtn.Name = "PreviousBtn";
             this.PreviousBtn.Size = new System.Drawing.Size(69, 39);
@@ -86,19 +85,11 @@ namespace NodeJSClient.Forms
             this.TopPanel.Controls.Add(this.button2);
             this.TopPanel.Controls.Add(this.Date);
             this.TopPanel.Controls.Add(this.PreviousBtn);
-            this.TopPanel.Location = new System.Drawing.Point(16, 20);
+            this.TopPanel.Location = new System.Drawing.Point(12, 20);
             this.TopPanel.Name = "TopPanel";
             this.TopPanel.Size = new System.Drawing.Size(1197, 100);
             this.TopPanel.TabIndex = 4;
             this.TopPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.TopPanel_Paint);
-            // 
-            // customSwitch2
-            // 
-            this.customSwitch2.Location = new System.Drawing.Point(91, 16);
-            this.customSwitch2.Name = "customSwitch2";
-            this.customSwitch2.Size = new System.Drawing.Size(162, 66);
-            this.customSwitch2.TabIndex = 0;
-            this.customSwitch2.Load += new System.EventHandler(this.customSwitch2_Load);
             // 
             // customSwitch1
             // 
@@ -108,6 +99,13 @@ namespace NodeJSClient.Forms
             this.customSwitch1.Size = new System.Drawing.Size(0, 61);
             this.customSwitch1.TabIndex = 3;
             this.customSwitch1.Load += new System.EventHandler(this.customSwitch1_Load);
+            // 
+            // customSwitch2
+            // 
+            this.customSwitch2.Location = new System.Drawing.Point(15, 18);
+            this.customSwitch2.Name = "customSwitch2";
+            this.customSwitch2.Size = new System.Drawing.Size(164, 79);
+            this.customSwitch2.TabIndex = 6;
             // 
             // Session
             // 
@@ -132,9 +130,9 @@ namespace NodeJSClient.Forms
         private CustomSwitch customSwitch1;
         private Button PreviousBtn;
         private Button button2;
-        private CustomSwitch customSwitch2;
         protected FlowLayoutPanel dayContainer;
         protected Panel TopPanel;
         protected Label Date;
+        private CustomSwitch customSwitch2;
     }
 }

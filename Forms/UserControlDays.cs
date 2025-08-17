@@ -159,7 +159,7 @@ namespace NodeJSClient
         }
 
 
-        //~~Data~~  
+        //~~~~~~~~~~~~~~~~~~~~Data~~~~~~~~~~~~~~~~~~~~  
 
         private void SetFormattedDateTime()
         {
@@ -169,7 +169,4 @@ namespace NodeJSClient
             this.toStringYear = dateTime.ToString("yyyy");
         }
     }
-
-
-
 }
