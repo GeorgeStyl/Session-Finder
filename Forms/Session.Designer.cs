@@ -33,7 +33,7 @@ namespace NodeJSClient.Forms
             this.dayContainer.Location = new System.Drawing.Point(13, 222);
             this.dayContainer.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.dayContainer.Name = "dayContainer";
-            this.dayContainer.Size = new System.Drawing.Size(1200, 704);
+            this.dayContainer.Size = new System.Drawing.Size(1200, 694);
             this.dayContainer.TabIndex = 0;
             this.dayContainer.Paint += new System.Windows.Forms.PaintEventHandler(this.flowLayoutPanel1_Paint);
             // 
@@ -103,7 +103,7 @@ namespace NodeJSClient.Forms
             // customSwitch1
             // 
             this.customSwitch1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.customSwitch1.Location = new System.Drawing.Point(53, -1);
+            this.customSwitch1.Location = new System.Drawing.Point(53, -7);
             this.customSwitch1.Name = "customSwitch1";
             this.customSwitch1.Size = new System.Drawing.Size(0, 61);
             this.customSwitch1.TabIndex = 3;
@@ -113,7 +113,7 @@ namespace NodeJSClient.Forms
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1230, 952);
+            this.ClientSize = new System.Drawing.Size(1230, 941);
             this.Controls.Add(this.TopPanel);
             this.Controls.Add(this.customSwitch1);
             this.Controls.Add(this.WeekDaysFlowLayout);

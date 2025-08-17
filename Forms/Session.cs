@@ -21,7 +21,7 @@ namespace NodeJSClient.Forms
         public Session()
         {
             InitializeComponent();
-            this.StartPosition = FormStartPosition.Manual; // manual control over position
+            this.StartPosition = FormStartPosition.Manual; // Manual control over position
 
 
             // Adjust size and initial position on load
@@ -45,9 +45,9 @@ namespace NodeJSClient.Forms
             // Set minimum width
             this.MinimumSize = new Size(MinFormWidth, this.MinimumSize.Height);
 
-            // Lock height to the screen's working area
-            int maxHeight = screen.WorkingArea.Height;
-            this.Height = maxHeight;
+            int maxHeight = 800;
+            this.Height = Math.Min(screen.WorkingArea.Height, maxHeight);
+
 
             // Keep horizontal position centered, vertical slightly above center
             int newX = screen.WorkingArea.X + (screen.WorkingArea.Width - this.Width) / 2;
@@ -90,6 +90,7 @@ namespace NodeJSClient.Forms
 
         private void flowLayoutPanel1_Paint(object sender, PaintEventArgs e)
         {
+
         }
 
         protected virtual void displayDays()
