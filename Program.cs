@@ -30,8 +30,8 @@ namespace NodeJSClient
             Application.SetCompatibleTextRenderingDefault(false);
 
             // Pass in the DayInfoService if your Session constructor supports it
-            //Session session = new Session(dayService);
-            //Application.Run(session);
+            Session session = new Session(dayService);
+            Application.Run(session);
 
             // Run the polymorfic Session form
             Application.Run(new UserDefaultSettings());

@@ -12,10 +12,26 @@ namespace NodeJSClient.Forms
 {
     public partial class UserDefaultSettings : Session
     {
-       
-        public UserDefaultSettings() : base()
+
+        public UserDefaultSettings()
         {
             InitializeComponent();
+
+            // Override child size with parent’s initial size
+            this.Size = InitialFormSize;
+            AdjustFormSizeAndPosition();
+
+            Session_InitializeLayout();
+        }
+
+        protected override void AdjustFormSizeAndPosition()
+        {
+            base.AdjustFormSizeAndPosition(); // use parent logic
+        }
+
+        protected override void Session_InitializeLayout()
+        {
+            base.Session_InitializeLayout(); // keep parent defaults
         }
 
         protected override void displayDays()

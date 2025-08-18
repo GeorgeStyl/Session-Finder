@@ -12,6 +12,9 @@ namespace NodeJSClient.Forms
     {
         private readonly DayInfoService _dayInfoService;
 
+
+        protected readonly Size InitialFormSize;
+
         protected const int MinFormWidth = 400;
         protected const int VerticalOffset = 5;  // Move window a bit up to avoid taskbar overlap
 
@@ -21,18 +24,13 @@ namespace NodeJSClient.Forms
         public Session()
         {
             InitializeComponent();
-            this.StartPosition = FormStartPosition.Manual; // Manual control over position
 
+            // Capture initial size
+            InitialFormSize = this.Size;
 
-            // Adjust size and initial position on load
-            this.Load += (s, e) => AdjustFormSizeAndPosition();
+            AdjustFormSizeAndPosition();
+            this.Load += (s, e) => Session_InitializeLayout();
 
-
-            Session_InitializeLayout(); // run layout code ONCE here
-
-
-
-          
 
             // Debug: list all controls
             foreach (Control c in this.Controls)
@@ -48,33 +46,24 @@ namespace NodeJSClient.Forms
         }
 
 
-        protected void AdjustFormSizeAndPosition()
+        protected virtual void AdjustFormSizeAndPosition()
         {
-            // Get the screen where the form is currently displayed
             var screen = Screen.FromControl(this);
 
-            // Set minimum width
-            this.MinimumSize = new Size(MinFormWidth, this.MinimumSize.Height);
+            // Lock size using captured initial size
+            this.MinimumSize = InitialFormSize;
+            this.MaximumSize = InitialFormSize;
+            this.Size = InitialFormSize;
 
-            int maxHeight = 800;
-            this.Height = Math.Min(screen.WorkingArea.Height, maxHeight);
-
-
-            // Keep horizontal position centered, vertical slightly above center
             int newX = screen.WorkingArea.X + (screen.WorkingArea.Width - this.Width) / 2;
             int newY = screen.WorkingArea.Y + (screen.WorkingArea.Height - this.Height) / 2 - VerticalOffset;
-
             this.Location = new Point(newX, newY);
         }
 
-   
-        protected void Session_InitializeLayout()
+
+        protected virtual void Session_InitializeLayout()
         {
             this.StartPosition = FormStartPosition.CenterScreen;
-
-            int totalHeight = this.ClientSize.Height;
-            int topSpacing = totalHeight / 4;
-            int containerHeight = (totalHeight * 3) / 4;
 
             dayContainer.Dock = DockStyle.None;
             dayContainer.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
@@ -87,16 +76,16 @@ namespace NodeJSClient.Forms
         {
             // Steps to initialize the session layout and controls
 
-            // 1️) Create the day controls
+            // 1) TopFlayoutPanel is already set up in the designer
+
+            // 2) Create the day controls
             displayDays();
 
-            // 2️) Now that dayContainer has controls, align the weekday labels
+            // 3) Now that dayContainer has controls, align the weekday labels
             InitializeWeekDaysLabels();
 
-            // 3️) Date label can be set any time
+            // 4) Date label can be set any time
             InitilizeDateLabel();
-
-            // 4️) Initialize the top flow layout panel
         }
 
         private void flowLayoutPanel1_Paint(object sender, PaintEventArgs e)
@@ -249,26 +238,21 @@ namespace NodeJSClient.Forms
 
         private void TopPanel_Paint(object sender, PaintEventArgs e)
         {
-            myPanel_Resize(sender, e);
+            //myPanel_Resize(sender, e);
         }
 
-        private void myPanel_Resize(object sender, EventArgs e)
-        {
-            Panel panel = sender as Panel;
+        //private void myPanel_Resize(object sender, EventArgs e)
+        //{
+        //    Panel panel = sender as Panel;
 
-            // Vertically center multiple children
-            foreach (Control child in panel.Controls)
-            {
-                if (child.Tag != null && child.Tag.ToString() == "centerVertically")
-                {
-                    child.Top = (panel.Height - child.Height) / 2;
-                }
-            }
-        }
-
-        private void customSwitch2_Load(object sender, EventArgs e)
-        {
-
-        }
+        //    // Vertically center multiple children
+        //    foreach (Control child in panel.Controls)
+        //    {
+        //        if (child.Tag != null && child.Tag.ToString() == "centerVertically")
+        //        {
+        //            child.Top = (panel.Height - child.Height) / 2;
+        //        }
+        //    }
+        //}
     }
 }
