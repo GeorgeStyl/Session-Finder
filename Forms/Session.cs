@@ -18,8 +18,17 @@ namespace NodeJSClient.Forms
         protected const int MinFormWidth = 400;
         protected const int VerticalOffset = 5;  // Move window a bit up to avoid taskbar overlap
 
+
+        protected int currentMonth = DateTime.Now.Month;
+        protected int currentYear = DateTime.Now.Year;
+        protected int currentDay = DateTime.Now.Day;
+
         private userControlDays _activeDayControl = null;
 
+        public event EventHandler previousMonthBtnEvent;
+        private bool _previousMonthBtnFired = false;
+        public event EventHandler nextMonthBtnEvent;
+        private bool _nextMonthBtnEvent = false;
 
         public Session()
         {
@@ -30,6 +39,16 @@ namespace NodeJSClient.Forms
 
             AdjustFormSizeAndPosition();
             this.Load += (s, e) => Session_InitializeLayout();
+
+
+            // ~~Events~~
+
+            // Subscribe to the Click event
+            this.previousMonthBtnEvent += (s, e) => _previousMonthBtnFired = true;
+            this.nextMonthBtnEvent += (s, e) => _nextMonthBtnEvent = true;
+
+            // Subscribe the method to the event
+            previousMonthBtnEvent += OnPreviousMonthBtnEvent;
 
 
             // Debug: list all controls
@@ -79,7 +98,7 @@ namespace NodeJSClient.Forms
             // 1) TopFlayoutPanel is already set up in the designer
 
             // 2) Create the day controls
-            displayDays();
+            displayDays(DateTime.Now.Month, DateTime.Now.Year);
 
             // 3) Now that dayContainer has controls, align the weekday labels
             InitializeWeekDaysLabels();
@@ -93,14 +112,16 @@ namespace NodeJSClient.Forms
 
         }
 
-        protected virtual void displayDays()
+        // displayDays can be called for different months / years too
+        protected virtual void displayDays(int changeMonth, int changeYear)
         {
             dayContainer.Controls.Clear();
 
             dayContainer.WrapContents = true;
             dayContainer.FlowDirection = FlowDirection.LeftToRight;
 
-            int daysInMonth = DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month);
+            
+            int daysInMonth = DateTime.DaysInMonth(changeYear, changeMonth);
             int controlCountPerRow = 7;
             int margin = 5;
             int totalSpacing = controlCountPerRow * margin * 2;
@@ -115,6 +136,7 @@ namespace NodeJSClient.Forms
             {
                 for (int day = 1; day <= daysInMonth + 5; day++)
                 {
+                    // Create a DateTime for each day and its info
                     dayDate = DateTime.Now.AddDays(day - 1);
                     string formatted = dayDate.ToString("dddd, dd MMMM yyyy");  // Format: Weekday, Day Month Year
                     var dayControl = new userControlDays(day, _ID, DateTime.Now.AddDays(day - 1), formatted); // Pass the date for each next days control    
@@ -125,7 +147,8 @@ namespace NodeJSClient.Forms
                     dayControl.Size = new Size(controlWidth, controlHeight);
 
                     dayContainer.Controls.Add(dayControl);
-
+                    
+               
 
                     _ID++;
                 }
@@ -210,12 +233,6 @@ namespace NodeJSClient.Forms
             Date.Text = DateTime.Now.ToString("MMMM / yyyy", System.Globalization.CultureInfo.InvariantCulture);
         }
 
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void customSwitch1_Load(object sender, EventArgs e)
         {
             // Do nothing
@@ -231,28 +248,30 @@ namespace NodeJSClient.Forms
 
         }
 
-        private void button2_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void TopPanel_Paint(object sender, PaintEventArgs e)
         {
             //myPanel_Resize(sender, e);
         }
 
-        //private void myPanel_Resize(object sender, EventArgs e)
-        //{
-        //    Panel panel = sender as Panel;
+        private void PreviousMonthBtn_Click(object sender, EventArgs e)
+        {
+            // Fire the event when button is clicked
+            previousMonthBtnEvent?.Invoke(this, EventArgs.Empty);
+        }
 
-        //    // Vertically center multiple children
-        //    foreach (Control child in panel.Controls)
-        //    {
-        //        if (child.Tag != null && child.Tag.ToString() == "centerVertically")
-        //        {
-        //            child.Top = (panel.Height - child.Height) / 2;
-        //        }
-        //    }
-        //}
+        private void NextMonthBtn_Click(object sender, EventArgs e)
+        {
+            // Fire the event when button is clicked
+            nextMonthBtnEvent?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnPreviousMonthBtnEvent(object sender, EventArgs e)
+        {
+            // When the event is fired, call displayDays with
+            Console.WriteLine(" Previous Month button event caught!");
+
+            // You can do other logic here, e.g. update the UI
+        }
+
     }
 }
