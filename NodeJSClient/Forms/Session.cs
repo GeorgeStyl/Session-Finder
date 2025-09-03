@@ -387,14 +387,14 @@ namespace NodeJSClient.Forms
 
         private void RowSelection_Load(object sender, EventArgs e)
         {
-            RowSelection.Text = "Multiple selection";
+            RowSelection.Text = "All row selection";
             RowSelection.Checked = false;
         }
 
 
         private void MultipleSelection_Load(object sender, EventArgs e)
         {
-            MultipleSelection.Text = "All row selection";
+            MultipleSelection.Text = "Multiple selection";
             MultipleSelection.Checked = false;
         }
         

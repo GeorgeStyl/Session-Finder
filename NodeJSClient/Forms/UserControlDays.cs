@@ -11,6 +11,9 @@ namespace NodeJSClient
     {
         // Static list to keep track of all instances
         public static List<userControlDays> AllInstances { get; } = new List<userControlDays>();
+
+        private bool _isSelected = false;   // tracks persistent selection
+
         public int InstanceNumber { get; private set; }
         public int DayNum { get; private set; }
         public Color originalBackColor { get; private set; } = Color.Teal;
@@ -40,6 +43,11 @@ namespace NodeJSClient
         {
             InitializeComponent();
 
+            // Attach events
+            this.MouseClick += UserControlDays_MouseClick;
+            this.MouseEnter += DayControl_MouseEnter;
+            this.MouseLeave += DayControl_MouseLeave;
+
             // Store the parameters properly
             this.dayNum = dayNum;         // The day number to display
             this.SeqIndex = seqIndex;     // Sequential index for row calculations
@@ -59,10 +67,7 @@ namespace NodeJSClient
             // Add to static list
             AllInstances.Add(this);
 
-            // Attach events
-            this.MouseClick += UserControlDays_Click;
-            this.MouseEnter += DayControl_MouseEnter;
-            this.MouseLeave += DayControl_MouseLeave;
+            
 
             // Initialize the label
             InitializeTopRightLabel();
@@ -79,11 +84,7 @@ namespace NodeJSClient
             // Nothing needed here
         }
 
-        protected void UserControlDays_Click(object sender, EventArgs e)
-        {
-            //MessageBox.Show($"Clicked day: {this.toStringDay}/{this.toStringMonth}/{this.toStringYear}");
-        }
-
+       
         private void InitializeTopRightLabel()
         {
             topRightLabel = new Label();
@@ -201,10 +202,15 @@ namespace NodeJSClient
 
 
 
-            if (_parentForm.CurrentSelection == "MULTIPLE")
+            if (_parentForm.CurrentSelection == "ROW")
             {
                 // Highlight the entire row using the helper method
                 control.HighlightRow();
+            }
+            else if (_parentForm.CurrentSelection == "MULTIPLE")
+            {
+                if (!_isSelected) // only highlight temporarily if not selected
+                    this.BackColor = Color.LightBlue;
             }
             else
             {
@@ -218,10 +224,11 @@ namespace NodeJSClient
         private void DayControl_MouseLeave(object sender, EventArgs e)
         {
             var control = sender as userControlDays;
+
             if (control == null) return;
 
 
-            if (_parentForm.CurrentSelection == "MULTIPLE")
+            if (_parentForm.CurrentSelection == "ROW")
             {
                 // Reset the entire row
                 int rowIndex = (control.SeqIndex - 1) / 7;
@@ -235,14 +242,31 @@ namespace NodeJSClient
 
                 }
             }
+            else if (_parentForm.CurrentSelection == "MULTIPLE")
+            {
+                // If it was selected, keep violet
+                if (_isSelected)
+                    this.BackColor = Color.Violet;
+                else
+                    this.BackColor = originalBackColor;
+            }
             else
             {
-                // Reset only this cell if in current month
+                //Reset only this cell if in current month
                 if (control.isInCurrentMonth)
                     control.BackColor = control.originalBackColor;
             }
         }
 
+        protected void UserControlDays_MouseClick(object sender, EventArgs e)
+        {
+
+            // Toggle selection
+            _isSelected = !_isSelected;
+
+            // Update persistent color
+            this.BackColor = _isSelected ? Color.Violet : originalBackColor;
+        }
 
 
 
