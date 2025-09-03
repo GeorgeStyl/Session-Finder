@@ -24,6 +24,7 @@ namespace NodeJSClient.Forms
 
 
         private ComboBox DateComboBox;
+ 
 
         public string CurrentSelection
         {
@@ -61,7 +62,7 @@ namespace NodeJSClient.Forms
             AdjustFormSizeAndPosition();
             this.Load += (s, e) => Session_InitializeLayout();
 
-            // Load event for checkboxes
+            // Load event for check boxes
             this.Load += SingleSelection_Load;
             this.Load += RowSelection_Load;
             this.Load += MultipleSelection_Load;
@@ -69,6 +70,8 @@ namespace NodeJSClient.Forms
             SingleSelection.CheckedChanged += Selection_CheckedChanged;
             RowSelection.CheckedChanged += Selection_CheckedChanged;
             MultipleSelection.CheckedChanged += Selection_CheckedChanged;
+            MultipleSelection.CheckedChanged += MultipleSelection_CheckedChanged;
+
 
 
 
@@ -397,33 +400,46 @@ namespace NodeJSClient.Forms
             MultipleSelection.Text = "Multiple selection";
             MultipleSelection.Checked = false;
         }
-        
+
 
         // Attach this single handler to all three checkboxes 
         private void Selection_CheckedChanged(object sender, EventArgs e)
         {
             CheckBox changed = sender as CheckBox;
 
-            // If the checkbox was checked, uncheck all others
             if (changed.Checked)
             {
                 foreach (CheckBox cb in new[] { SingleSelection, RowSelection, MultipleSelection })
                 {
                     if (cb != changed)
-                    {
                         cb.Checked = false;
-                    }
                 }
             }
             else
             {
-                // Prevent all from being unchecked
                 if (!SingleSelection.Checked && !RowSelection.Checked && !MultipleSelection.Checked)
-                {
-                    changed.Checked = true; // restore the one that was unchecked
-                }
+                    changed.Checked = true; // restore
             }
+
+            // Update button state
+            UpdateChanges.Enabled = MultipleSelection.Checked;
         }
 
+
+        private void MultipleSelection_CheckedChanged(object sender, EventArgs e)
+        {
+            // Enable or disable the UpdateChanges button based on the checkbox state
+            UpdateChanges.Enabled = MultipleSelection.Checked;
+        }
+
+
+        private void UpdateChanges_Click(object sender, EventArgs e)
+        {
+            if (MultipleSelection.Checked == true)
+            {
+                UpdateChanges.Enabled = true;
+            }
+            else UpdateChanges.Enabled = false;
+        }
     }
 }

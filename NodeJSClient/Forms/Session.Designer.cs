@@ -27,6 +27,7 @@ namespace NodeJSClient.Forms
             this.NextMonthBtn = new System.Windows.Forms.Button();
             this.PreviousMonthBtn = new System.Windows.Forms.Button();
             this.helpProvider1 = new System.Windows.Forms.HelpProvider();
+            this.UpdateChanges = new System.Windows.Forms.Button();
             this.TopPanel.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -51,6 +52,7 @@ namespace NodeJSClient.Forms
             // 
             // TopPanel
             // 
+            this.TopPanel.Controls.Add(this.UpdateChanges);
             this.TopPanel.Controls.Add(this.MultipleSelection);
             this.TopPanel.Controls.Add(this.RowSelection);
             this.TopPanel.Controls.Add(this.SingleSelection);
@@ -126,6 +128,17 @@ namespace NodeJSClient.Forms
             this.PreviousMonthBtn.UseVisualStyleBackColor = true;
             this.PreviousMonthBtn.Click += new System.EventHandler(this.PreviousMonthBtn_Click);
             // 
+            // UpdateChanges
+            // 
+            this.UpdateChanges.Enabled = false;
+            this.UpdateChanges.Location = new System.Drawing.Point(132, 61);
+            this.UpdateChanges.Name = "UpdateChanges";
+            this.UpdateChanges.Size = new System.Drawing.Size(107, 23);
+            this.UpdateChanges.TabIndex = 0;
+            this.UpdateChanges.Text = "Update changes";
+            this.UpdateChanges.UseVisualStyleBackColor = true;
+            this.UpdateChanges.Click += new System.EventHandler(this.UpdateChanges_Click);
+            // 
             // Session
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -154,5 +167,7 @@ namespace NodeJSClient.Forms
         private CheckBox RowSelection;
         private CheckBox SingleSelection;
         private CheckBox MultipleSelection;
+        private Button button1;
+        private Button UpdateChanges;
     }
 }
