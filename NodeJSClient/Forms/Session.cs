@@ -25,6 +25,16 @@ namespace NodeJSClient.Forms
 
         private ComboBox DateComboBox;
 
+        public string CurrentSelection
+        {
+            get
+            {
+                if (SingleSelection.Checked) return "SINGLE";
+                if (RowSelection.Checked) return "MULTIPLE";
+                return "CUSTOM"; // fallback, guaranteed at least one checked
+            }
+        }
+
 
 
 
@@ -50,6 +60,16 @@ namespace NodeJSClient.Forms
 
             AdjustFormSizeAndPosition();
             this.Load += (s, e) => Session_InitializeLayout();
+
+            // Load event for checkboxes
+            this.Load += SingleSelection_Load;
+            this.Load += RowSelection_Load;
+            this.Load += MultipleSelection_Load;
+
+            SingleSelection.CheckedChanged += Selection_CheckedChanged;
+            RowSelection.CheckedChanged += Selection_CheckedChanged;
+            MultipleSelection.CheckedChanged += Selection_CheckedChanged;
+
 
 
             // ~~Events~~
@@ -217,7 +237,8 @@ namespace NodeJSClient.Forms
                     displayDay,   // This must be the number shown in the top-right label
                     _seqIndex,    // Sequential index in the container
                     cellDate,
-                    isCurrentMonth
+                    isCurrentMonth,
+                    this
                 );
 
                 dayControl.Margin = new Padding(margin);
@@ -293,16 +314,6 @@ namespace NodeJSClient.Forms
         //    //DateLbl.Text = currentDate.ToString("MMMM / yyyy", System.Globalization.CultureInfo.InvariantCulture);
         //}
 
-        private void customSwitch1_Load(object sender, EventArgs e)
-        {
-            // Do nothing
-        }
-
-        private void TopFlayoutPanel_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
         private void TopPanel_Paint(object sender, PaintEventArgs e)
         {
             //myPanel_Resize(sender, e);
@@ -351,9 +362,68 @@ namespace NodeJSClient.Forms
 
         }
 
-        private void DateComboBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
 
+        /****************************************************************************************************
+         *                                                                                                  *
+         *                        ████████  CHECKBOX SELECTION HANDLER  ████████                            *
+         *                                                                                                  *
+         *  This handler enforces that exactly one of the three checkboxes is always checked:               *
+         *                                                                                                  *
+         *      - SingleSelection, MultipleSelection, and MultipleSelection are mutually exclusive.           *
+         *      - Checking one automatically unchecks the others.                                           *
+         *      - Unchecking the last checked box restores it immediately.                                  *
+         *      - Use this single handler for all three checkboxes to avoid dynamic unsubscribing errors.   *
+         *      - Uses the var'selectionMode' to determine the highlighting mode                            *
+         *                                                                                                  *
+         *  This visual banner ensures clarity in the minimap and is easy to spot in large files.           *
+         *                                                                                                  *
+         ****************************************************************************************************/
+
+        private void SingleSelection_Load(object sender, EventArgs e)
+        {
+            SingleSelection.Text = "Single selection";
+            SingleSelection.Checked = true;   
         }
+
+        private void RowSelection_Load(object sender, EventArgs e)
+        {
+            RowSelection.Text = "Multiple selection";
+            RowSelection.Checked = false;
+        }
+
+
+        private void MultipleSelection_Load(object sender, EventArgs e)
+        {
+            MultipleSelection.Text = "Custom selection";
+            MultipleSelection.Checked = false;
+        }
+        
+
+        // Attach this single handler to all three checkboxes 
+        private void Selection_CheckedChanged(object sender, EventArgs e)
+        {
+            CheckBox changed = sender as CheckBox;
+
+            // If the checkbox was checked, uncheck all others
+            if (changed.Checked)
+            {
+                foreach (CheckBox cb in new[] { SingleSelection, RowSelection, MultipleSelection })
+                {
+                    if (cb != changed)
+                    {
+                        cb.Checked = false;
+                    }
+                }
+            }
+            else
+            {
+                // Prevent all from being unchecked
+                if (!SingleSelection.Checked && !RowSelection.Checked && !MultipleSelection.Checked)
+                {
+                    changed.Checked = true; // restore the one that was unchecked
+                }
+            }
+        }
+
     }
 }

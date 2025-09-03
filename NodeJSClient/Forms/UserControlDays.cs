@@ -21,13 +21,14 @@ namespace NodeJSClient
         private Label topRightLabel;
 
         private userControlDays _activeDayControl = null;
-        private CustomSwitch _customSwitch;
+
+        private Session _parentForm;
 
 
         public int SeqIndex { get; private set; }           // Sequential index in container (for row calculations)
 
         public bool highlightDay { get; set; } = false;
-        public static CustomSwitch GlobalCustomSwitchInstance;
+        
 
         protected DateTime dateTime { get; private set; }
         protected string toStringDay { get; private set; }
@@ -35,7 +36,7 @@ namespace NodeJSClient
         protected string toStringYear { get; private set; }
 
 
-        public userControlDays(int dayNum, int seqIndex, DateTime dateTime, bool isInCurrentMonth)
+        public userControlDays(int dayNum, int seqIndex, DateTime dateTime, bool isInCurrentMonth, Session parent)
         {
             InitializeComponent();
 
@@ -65,6 +66,8 @@ namespace NodeJSClient
 
             // Initialize the label
             InitializeTopRightLabel();
+
+            this._parentForm = parent;
         }
 
 
@@ -78,7 +81,7 @@ namespace NodeJSClient
 
         protected void UserControlDays_Click(object sender, EventArgs e)
         {
-            MessageBox.Show($"Clicked day: {this.toStringDay}/{this.toStringMonth}/{this.toStringYear}");
+            //MessageBox.Show($"Clicked day: {this.toStringDay}/{this.toStringMonth}/{this.toStringYear}");
         }
 
         private void InitializeTopRightLabel()
@@ -171,9 +174,9 @@ namespace NodeJSClient
             var control = sender as userControlDays;
             if (control == null) return;
 
-            var switchInstance = CustomSwitch.GlobalCustomSwitchInstance;
 
-            if (switchInstance != null && switchInstance.changeOnHoverMode)
+
+            if (_parentForm.CurrentSelection == "MULTIPLE")
             {
                 // Highlight the entire row using the helper method
                 control.HighlightRow();
@@ -192,9 +195,8 @@ namespace NodeJSClient
             var control = sender as userControlDays;
             if (control == null) return;
 
-            var switchInstance = CustomSwitch.GlobalCustomSwitchInstance;
 
-            if (switchInstance != null && switchInstance.changeOnHoverMode)
+            if (_parentForm.CurrentSelection == "MULTIPLE")
             {
                 // Reset the entire row
                 int rowIndex = (control.SeqIndex - 1) / 7;
@@ -205,7 +207,7 @@ namespace NodeJSClient
                 {
                     if (instance.SeqIndex >= rowStart && instance.SeqIndex <= rowEnd)
                         instance.BackColor = instance.originalBackColor; // gray for filler, teal/orange for month/today
-                    
+
                 }
             }
             else
