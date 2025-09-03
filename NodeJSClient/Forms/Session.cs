@@ -10,48 +10,54 @@ namespace NodeJSClient.Forms
 {
     public partial class Session : Form
     {
+        // =========================
+        // Constants
+        // =========================
+        protected const int MinFormWidth = 400;
+        protected const int VerticalOffset = 5;  // Move window slightly up to avoid taskbar overlap
+
+        // =========================
+        // Readonly / Services
+        // =========================
         private readonly DayInfoService _dayInfoService;
-
-
         protected readonly Size InitialFormSize;
 
-
-        protected const int MinFormWidth = 400;
-        protected const int VerticalOffset = 5;  // Move window a bit up to avoid taskbar overlap
-
-
+        // =========================
+        // State / Fields
+        // =========================
         protected DateTime changeDateLbl;
 
+        protected DateTime currentDate = new DateTime(
+                                             DateTime.Now.Year,   // current year
+                                             DateTime.Now.Month,  // current month
+                                             DateTime.Now.Day     // current day
+                                           );
 
         private ComboBox DateComboBox;
- 
+        private userControlDays _activeDayControl = null;
 
+        public event EventHandler previousMonthBtnEvent;
+        private bool _previousMonthBtnFired = false;
+
+        public event EventHandler nextMonthBtnEvent;
+        private bool _nextMonthBtnEvent = false;
+
+        // =========================
+        // Properties
+        // =========================
         public string CurrentSelection
         {
             get
             {
                 if (SingleSelection.Checked) return "SINGLE";
                 if (RowSelection.Checked) return "ROW";
-                return "MULTIPLE"; // fallback, guaranteed at least one checked
+                return "MULTIPLE";  // fallback, guaranteed at least one checked
             }
         }
 
-
-
-
-        protected DateTime currentDate = new DateTime(
-             DateTime.Now.Year,   // current year
-             DateTime.Now.Month,  // current month
-             DateTime.Now.Day     // current day
-        );
-
-        private userControlDays _activeDayControl = null;
-
-        public event EventHandler previousMonthBtnEvent;
-        private bool _previousMonthBtnFired = false;
-        public event EventHandler nextMonthBtnEvent;
-        private bool _nextMonthBtnEvent = false;
-
+        // =========================
+        // Constructor
+        // =========================
         public Session()
         {
             InitializeComponent();
@@ -59,10 +65,11 @@ namespace NodeJSClient.Forms
             // Capture initial size
             InitialFormSize = this.Size;
 
+            // Adjust form size and layout
             AdjustFormSizeAndPosition();
             this.Load += (s, e) => Session_InitializeLayout();
 
-            // Load event for check boxes
+            // Load events for checkboxes
             this.Load += SingleSelection_Load;
             this.Load += RowSelection_Load;
             this.Load += MultipleSelection_Load;
@@ -72,38 +79,32 @@ namespace NodeJSClient.Forms
             MultipleSelection.CheckedChanged += Selection_CheckedChanged;
             MultipleSelection.CheckedChanged += MultipleSelection_CheckedChanged;
 
-
-
-
-            // ~~Events~~
-
-            // Subscribe to the Click event
+            // Subscribe to month navigation events
             this.previousMonthBtnEvent += (s, e) => _previousMonthBtnFired = true;
             this.nextMonthBtnEvent += (s, e) => _nextMonthBtnEvent = true;
 
-            // Subscribe the methods to corresponding events
             previousMonthBtnEvent += OnPreviousMonthBtnEvent;
             nextMonthBtnEvent += OnNextMonthBtnEvent;
-
-
-        
-
-
 
             // Debug: list all controls
             foreach (Control c in this.Controls)
             {
                 Console.WriteLine(c.Name + " - Visible: " + c.Visible);
             }
-
         }
 
+
+        // =========================
+        // Constructors
+        // =========================
         public Session(DayInfoService service) : this()
         {
             _dayInfoService = service;
         }
 
-
+        // =========================
+        // Form Layout / Initialization
+        // =========================
         protected virtual void AdjustFormSizeAndPosition()
         {
             var screen = Screen.FromControl(this);
@@ -118,7 +119,6 @@ namespace NodeJSClient.Forms
             this.Location = new Point(newX, newY);
         }
 
-
         protected virtual void Session_InitializeLayout()
         {
             this.StartPosition = FormStartPosition.CenterScreen;
@@ -129,7 +129,6 @@ namespace NodeJSClient.Forms
                 ctrl.Padding = new Padding();
             }
 
-
             dayContainer.Dock = DockStyle.None;
             dayContainer.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             dayContainer.FlowDirection = FlowDirection.LeftToRight;
@@ -137,68 +136,44 @@ namespace NodeJSClient.Forms
             dayContainer.AutoScroll = true;
         }
 
-        //protected void DateComboBox_Initialize()
-        //{
-        //    // Initialize the DateComboBox with all 12 months of the current year
-        //    DateComboBox.Items.Clear();
-        //    int currentYear = DateTime.Now.Year;
-
-        //    for (int i = 1; i <= 12; i++)
-        //    {
-        //        // Use i for month
-        //        DateTime monthDate = new DateTime(currentYear, i, 1);
-        //        DateComboBox.Items.Add(monthDate.ToString("MMMM yyyy"));
-        //    }
-
-        //    // Set to current month by default
-        //    DateComboBox.SelectedIndex = DateTime.Now.Month - 1;
-        //}
-
-
+        // =========================
+        // Load / Paint Events
+        // =========================
         private void Session_Load(object sender, EventArgs e)
         {
-            // Steps to initialize the session layout and controls
-
-            // 1) TopFlayoutPanel is already set up in the designer
-
-            // 2) Create the day controls
+            // Initialize day controls and labels
             displayDays();
-
-            // 3) Now that dayContainer has controls, align the weekday labels
             InitializeWeekDaysLabels();
-
-            // 4) Date ComboBox
             //DateComboBox_Initialize();
         }
 
-        private void flowLayoutPanel1_Paint(object sender, PaintEventArgs e)
-        {
+        private void flowLayoutPanel1_Paint(object sender, PaintEventArgs e) { }
 
-        }
+        private void WeekDaysFlowLayout_Paint(object sender, PaintEventArgs e) { }
 
-        // displayDays can be called for different months / years too
+        private void TopPanel_Paint(object sender, PaintEventArgs e) { }
+
+        // =========================
+        // Day Display Methods
+        // =========================
         protected virtual void displayDays()
         {
             dayContainer.Controls.Clear();
 
             int year = currentDate.Year;
             int month = currentDate.Month;
-
             int daysInMonth = DateTime.DaysInMonth(year, month);
-            DateTime firstDayOfMonth = new DateTime(year, month, 1);
+            DateTime firstDay = new DateTime(year, month, 1);
 
             // Monday = 0 … Sunday = 6
-            int startIndex = (firstDayOfMonth.DayOfWeek == DayOfWeek.Sunday)
-                                ? 6
-                                : (int)firstDayOfMonth.DayOfWeek - 1;
-
+            int startIndex = (firstDay.DayOfWeek == DayOfWeek.Sunday) ? 6 : (int)firstDay.DayOfWeek - 1;
             int totalCells = daysInMonth + startIndex;
             if (totalCells % 7 != 0)
                 totalCells += 7 - (totalCells % 7);
 
             int margin = 5;
-            int controlCountPerRow = 7;
-            int controlWidth = (dayContainer.Width - (controlCountPerRow * margin * 2)) / controlCountPerRow;
+            int controlCount = 7;
+            int controlWidth = (dayContainer.Width - (controlCount * margin * 2)) / controlCount;
             int controlHeight = 100;
 
             int dayNumber = 1;   // For current month
@@ -212,7 +187,6 @@ namespace NodeJSClient.Forms
 
                 if (i >= startIndex && dayNumber <= daysInMonth)
                 {
-                    // Current month
                     cellDate = new DateTime(year, month, dayNumber);
                     isCurrentMonth = true;
                     displayDay = dayNumber;
@@ -220,8 +194,7 @@ namespace NodeJSClient.Forms
                 }
                 else if (i < startIndex)
                 {
-                    // Previous month filler
-                    DateTime prevMonth = firstDayOfMonth.AddMonths(-1);
+                    DateTime prevMonth = firstDay.AddMonths(-1);
                     int prevMonthDays = DateTime.DaysInMonth(prevMonth.Year, prevMonth.Month);
                     int day = prevMonthDays - (startIndex - i - 1);
                     cellDate = new DateTime(prevMonth.Year, prevMonth.Month, day);
@@ -229,16 +202,15 @@ namespace NodeJSClient.Forms
                 }
                 else
                 {
-                    // Next month filler
                     int day = i - startIndex - daysInMonth + 1;
-                    DateTime nextMonth = firstDayOfMonth.AddMonths(1);
+                    DateTime nextMonth = firstDay.AddMonths(1);
                     cellDate = new DateTime(nextMonth.Year, nextMonth.Month, day);
                     displayDay = day;
                 }
 
                 var dayControl = new userControlDays(
-                    displayDay,   // This must be the number shown in the top-right label
-                    _seqIndex,    // Sequential index in the container
+                    displayDay,
+                    _seqIndex,
                     cellDate,
                     isCurrentMonth,
                     this
@@ -248,48 +220,32 @@ namespace NodeJSClient.Forms
                 dayControl.Size = new Size(controlWidth, controlHeight);
 
                 dayContainer.Controls.Add(dayControl);
-
                 _seqIndex++;
             }
-
         }
-
-
 
         protected void InitializeWeekDaysLabels()
         {
             string[] weekdays = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+            var firstDay = dayContainer.Controls.OfType<userControlDays>().FirstOrDefault();
 
-            // Get the first userControlDays instance to grab its size and margin
-            var firstDayControl = dayContainer.Controls.OfType<userControlDays>().FirstOrDefault();
-
-            // If none found, fallback to defaults
-            int labelWidth = 110;
+            int labelWidth = firstDay != null ? firstDay.Width : 110;
             int labelHeight = 31;
-            Padding labelMargin = new Padding(5);
-
-            if (firstDayControl != null)
-            {
-                labelWidth = firstDayControl.Width;
-                labelMargin = firstDayControl.Margin;
-            }
+            Padding labelMargin = firstDay != null ? firstDay.Margin : new Padding(5);
 
             WeekDaysFlowLayout.Controls.Clear();
 
             for (int i = 0; i < weekdays.Length; i++)
             {
-                System.Windows.Forms.Label lbl = new System.Windows.Forms.Label();
+                System.Windows.Forms.Label lbl = new System.Windows.Forms.Label(); // fully qualified
                 lbl.Text = weekdays[i];
                 lbl.TextAlign = ContentAlignment.MiddleCenter;
                 lbl.Size = new Size(labelWidth, labelHeight);
-
-                // Set margin similarly but avoid extra margin on last label's right side
                 lbl.Margin = new Padding(
-                    labelMargin.Left,
-                    labelMargin.Top,
-                    i < weekdays.Length - 1 ? labelMargin.Right : 0,
-                    labelMargin.Bottom);
-
+                                      labelMargin.Left,
+                                      labelMargin.Top,
+                                      i < weekdays.Length - 1 ? labelMargin.Right : 0,
+                                      labelMargin.Bottom);
                 lbl.Font = new Font("Segoe UI", 10, FontStyle.Bold);
                 lbl.BackColor = Color.LightGray;
                 lbl.ForeColor = Color.Black;
@@ -298,89 +254,63 @@ namespace NodeJSClient.Forms
             }
         }
 
-
-        private void WeekDaysFlowLayout_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        //protected virtual void InitilizeDateLabel()
-        //{
-        //    // Ignore Click and hover event
-        //    DateLbl.Enabled = true;
-        //    DateLbl.Cursor = Cursors.Default; // remove hand cursor if set
-
-        //    //Date.Size = new Size(200, 40);    
-        //    DateLbl.Font = new Font("Segoe UI", 19, FontStyle.Bold);
-        //    DateLbl.TextAlign = ContentAlignment.MiddleLeft;
-
-        //    //DateLbl.Text = currentDate.ToString("MMMM / yyyy", System.Globalization.CultureInfo.InvariantCulture);
-        //}
-
-        private void TopPanel_Paint(object sender, PaintEventArgs e)
-        {
-            //myPanel_Resize(sender, e);
-        }
-
-        private void PreviousMonthBtn_Click(object sender, EventArgs e)
-        {
-            // Fire the event when button is clicked
-            previousMonthBtnEvent?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void NextMonthBtn_Click(object sender, EventArgs e)
-        {
-            // Fire the event when button is clicked
-            nextMonthBtnEvent?.Invoke(this, EventArgs.Empty);
-        }
+        // =========================
+        // Month Navigation
+        // =========================
+        private void PreviousMonthBtn_Click(object sender, EventArgs e) => previousMonthBtnEvent?.Invoke(this, EventArgs.Empty);
+        private void NextMonthBtn_Click(object sender, EventArgs e) => nextMonthBtnEvent?.Invoke(this, EventArgs.Empty);
 
         private void OnPreviousMonthBtnEvent(object sender, EventArgs e)
         {
-            // Subtract one month
             currentDate = currentDate.AddMonths(-1);
-
-            // Update the label
-            //DateLbl.Text = currentDate.ToString("MMMM / yyyy", System.Globalization.CultureInfo.InvariantCulture);
-
-            // Optional: update your day display
+            //DateLbl.Text = currentDate.ToString("MMMM / yyyy", CultureInfo.InvariantCulture);
             displayDays();
-
             Console.WriteLine($"Current Month: {currentDate.Month}, Year: {currentDate.Year}");
         }
 
-
         private void OnNextMonthBtnEvent(object sender, EventArgs e)
         {
-            // Add one month
             currentDate = currentDate.AddMonths(1);
-
-            // Update the label
-            //DateLbl.Text = currentDate.ToString("MMMM / yyyy", System.Globalization.CultureInfo.InvariantCulture);
-
-            // Optional: update your day display
+            //DateLbl.Text = currentDate.ToString("MMMM / yyyy", CultureInfo.InvariantCulture);
             displayDays();
-
             Console.WriteLine($"Current Month: {currentDate.Month}, Year: {currentDate.Year}");
-
-
         }
 
 
         /****************************************************************************************************
          *                                                                                                  *
-         *                        ████████  CHECKBOX SELECTION HANDLER  ████████                            *
+         *                     ████████ CHECKBOX SELECTION & BUTTON HANDLING ████████                       *
          *                                                                                                  *
-         *  This handler enforces that exactly one of the three checkboxes is always checked:               *
+         * This set of methods manages the selection mode checkboxes and the "UpdateChanges" button.        *
          *                                                                                                  *
-         *      - SingleSelection, MultipleSelection, and MultipleSelection are mutually exclusive.           *
-         *      - Checking one automatically unchecks the others.                                           *
-         *      - Unchecking the last checked box restores it immediately.                                  *
-         *      - Use this single handler for all three checkboxes to avoid dynamic unsubscribing errors.   *
-         *      - Uses the var'selectionMode' to determine the highlighting mode                            *
+         * Key behaviors:                                                                                   *
          *                                                                                                  *
-         *  This visual banner ensures clarity in the minimap and is easy to spot in large files.           *
+         * 1. SingleSelection_Load / RowSelection_Load / MultipleSelection_Load                             *
+         *    - Initializes the checkbox text and default checked state.                                    *
+         *    - Only SingleSelection is checked by default.                                                 *
+         *                                                                                                  *
+         * 2. Selection_CheckedChanged                                                                      *
+         *    - Single handler for all three checkboxes (Single, Row, Multiple).                            *
+         *    - Ensures exactly one checkbox is always checked:                                             *
+         *        • Checking one automatically unchecks the others.                                         *
+         *        • Attempting to uncheck the last remaining checked box restores it immediately.           *
+         *    - Updates the "UpdateChanges" button state:                                                   *
+         *        • Enabled only if MultipleSelection is checked.                                           *
+         *                                                                                                  *
+         * 3. MultipleSelection_CheckedChanged                                                              *
+         *    - Optional separate handler (if used) to enable/disable the button based on MultipleSelection.*
+         *                                                                                                  *
+         * 4. UpdateChanges_Click                                                                           *
+         *    - Handles click event for the button.                                                         *
+         *    - Ensures the button state reflects MultipleSelection checkbox.                               *
+         *                                                                                                  *
+         * Notes:                                                                                           *
+         *  - All checkbox events can share the Selection_CheckedChanged handler to simplify logic.         *
+         *  - UpdateChanges button is dynamically enabled only for Multiple selection mode.                 *
+         *  - This setup avoids dynamic unsubscribing errors and keeps UI state consistent.                 *
          *                                                                                                  *
          ****************************************************************************************************/
+
 
         private void SingleSelection_Load(object sender, EventArgs e)
         {
