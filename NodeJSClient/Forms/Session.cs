@@ -30,8 +30,8 @@ namespace NodeJSClient.Forms
             get
             {
                 if (SingleSelection.Checked) return "SINGLE";
-                if (RowSelection.Checked) return "MULTIPLE";
-                return "CUSTOM"; // fallback, guaranteed at least one checked
+                if (RowSelection.Checked) return "ROW";
+                return "MULTIPLE"; // fallback, guaranteed at least one checked
             }
         }
 
@@ -394,7 +394,7 @@ namespace NodeJSClient.Forms
 
         private void MultipleSelection_Load(object sender, EventArgs e)
         {
-            MultipleSelection.Text = "Custom selection";
+            MultipleSelection.Text = "All row selection";
             MultipleSelection.Checked = false;
         }
         

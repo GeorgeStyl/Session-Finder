@@ -115,15 +115,42 @@ namespace NodeJSClient
         }
 
 
-        // ┌─────────────────────────────────────────────────────────────────────────────┐
-        // │                                                                             │
-        // │                                                                             │
-        // │                       EVENT HANDLING SECTION                                │
-        // │                                                                             │
-        // │            All MouseEnter, MouseLeave, Click events are below               │
-        // │                                                                             │
-        // │                                                                             │
-        // └─────────────────────────────────────────────────────────────────────────────┘
+        /****************************************************************************************************
+         *                                                                                                  *
+         *                         ████████ DAY CONTROL HIGHLIGHTING ████████                               *
+         *                                                                                                  *
+         * This set of methods handles visual feedback for day cells in the calendar user control.          *
+         *                                                                                                  *
+         * Methods included:                                                                                *
+         *                                                                                                  *
+         * 1. highlightControl()                                                                            *
+         *    - Highlights the current day in orange.                                                       *
+         *    - All other days default to teal.                                                             *
+         *    - Stores the original back color for reset.                                                   *
+         *                                                                                                  *
+         * 2. HighlightRow()                                                                                *
+         *    - Highlights an entire week row (7 days) in light blue.                                       *
+         *    - Only affects days in the current month.                                                     *
+         *    - Filler days (previous/next month) remain gray.                                              *
+         *                                                                                                  *
+         * 3. DayControl_MouseEnter()                                                                       *
+         *    - On hover, highlights either:                                                                *
+         *        • A single cell (if CurrentSelection != "MULTIPLE")                                       *
+         *        • The entire row (if CurrentSelection == "MULTIPLE")                                      *
+         *                                                                                                  *
+         * 4. DayControl_MouseLeave()                                                                       *
+         *    - Resets the cell(s) back to original color:                                                  *
+         *        • Single cell if CurrentSelection != "MULTIPLE"                                           *
+         *        • Entire row if CurrentSelection == "MULTIPLE"                                            *
+         *                                                                                                  *
+         * Notes:                                                                                           *
+         *  - _parentForm.CurrentSelection determines single/multiple selection mode.                       *
+         *  - AllInstances is the collection of all day controls.                                           *
+         *  - originalBackColor preserves the original state to restore after hover.                        *
+         *  - This logic ensures consistent highlighting behavior for both single and multiple selection.   *
+         *                                                                                                  *
+         ****************************************************************************************************/
+
 
 
         private void highlightControl()
@@ -166,12 +193,10 @@ namespace NodeJSClient
             }
         }
 
-
-
-
         private void DayControl_MouseEnter(object sender, EventArgs e)
         {
             var control = sender as userControlDays;
+
             if (control == null) return;
 
 
