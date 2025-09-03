@@ -12,28 +12,100 @@ namespace NodeJSClient.Forms
     {
         private readonly DayInfoService _dayInfoService;
 
+
+        protected readonly Size InitialFormSize;
+
+
+        protected const int MinFormWidth = 400;
+        protected const int VerticalOffset = 5;  // Move window a bit up to avoid taskbar overlap
+
+
+        protected DateTime changeDateLbl;
+
+
+        private ComboBox DateComboBox;
+
+
+
+
+        protected DateTime currentDate = new DateTime(
+             DateTime.Now.Year,   // current year
+             DateTime.Now.Month,  // current month
+             DateTime.Now.Day     // current day
+        );
+
+        private userControlDays _activeDayControl = null;
+
+        public event EventHandler previousMonthBtnEvent;
+        private bool _previousMonthBtnFired = false;
+        public event EventHandler nextMonthBtnEvent;
+        private bool _nextMonthBtnEvent = false;
+
         public Session()
         {
             InitializeComponent();
 
-            NodeJSClient.Forms.CustomSwitch.GlobalCustomSwitchInstance = customSwitch1;
+            // Capture initial size
+            InitialFormSize = this.Size;
 
-            Session_InitializeLayout(); // run layout code ONCE here
+            AdjustFormSizeAndPosition();
+            this.Load += (s, e) => Session_InitializeLayout();
+
+
+            // ~~Events~~
+
+            // Subscribe to the Click event
+            this.previousMonthBtnEvent += (s, e) => _previousMonthBtnFired = true;
+            this.nextMonthBtnEvent += (s, e) => _nextMonthBtnEvent = true;
+
+            // Subscribe the methods to corresponding events
+            previousMonthBtnEvent += OnPreviousMonthBtnEvent;
+            nextMonthBtnEvent += OnNextMonthBtnEvent;
+
+
+        
+
+
+
+            // Debug: list all controls
+            foreach (Control c in this.Controls)
+            {
+                Console.WriteLine(c.Name + " - Visible: " + c.Visible);
+            }
+
         }
-
 
         public Session(DayInfoService service) : this()
         {
             _dayInfoService = service;
         }
 
-        private void Session_InitializeLayout()
+
+        protected virtual void AdjustFormSizeAndPosition()
+        {
+            var screen = Screen.FromControl(this);
+
+            // Lock size using captured initial size
+            this.MinimumSize = InitialFormSize;
+            this.MaximumSize = InitialFormSize;
+            this.Size = InitialFormSize;
+
+            int newX = screen.WorkingArea.X + (screen.WorkingArea.Width - this.Width) / 2;
+            int newY = screen.WorkingArea.Y + (screen.WorkingArea.Height - this.Height) / 2 - VerticalOffset;
+            this.Location = new Point(newX, newY);
+        }
+
+
+        protected virtual void Session_InitializeLayout()
         {
             this.StartPosition = FormStartPosition.CenterScreen;
 
-            int totalHeight = this.ClientSize.Height;
-            int topSpacing = totalHeight / 4;
-            int containerHeight = (totalHeight * 3) / 4;
+            foreach (Control ctrl in TopPanel.Controls)
+            {
+                ctrl.Margin = new Padding();
+                ctrl.Padding = new Padding();
+            }
+
 
             dayContainer.Dock = DockStyle.None;
             dayContainer.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
@@ -42,74 +114,125 @@ namespace NodeJSClient.Forms
             dayContainer.AutoScroll = true;
         }
 
+        //protected void DateComboBox_Initialize()
+        //{
+        //    // Initialize the DateComboBox with all 12 months of the current year
+        //    DateComboBox.Items.Clear();
+        //    int currentYear = DateTime.Now.Year;
+
+        //    for (int i = 1; i <= 12; i++)
+        //    {
+        //        // Use i for month
+        //        DateTime monthDate = new DateTime(currentYear, i, 1);
+        //        DateComboBox.Items.Add(monthDate.ToString("MMMM yyyy"));
+        //    }
+
+        //    // Set to current month by default
+        //    DateComboBox.SelectedIndex = DateTime.Now.Month - 1;
+        //}
+
+
         private void Session_Load(object sender, EventArgs e)
         {
             // Steps to initialize the session layout and controls
 
-            // 1️) Create the day controls
+            // 1) TopFlayoutPanel is already set up in the designer
+
+            // 2) Create the day controls
             displayDays();
 
-            // 2️) Now that dayContainer has controls, align the weekday labels
+            // 3) Now that dayContainer has controls, align the weekday labels
             InitializeWeekDaysLabels();
 
-            // 3️) Date label can be set any time
-            InitilizeDateLabel();
-        }
-
-
-        private void Session_Resize(object sender, EventArgs e)
-        {
-
+            // 4) Date ComboBox
+            //DateComboBox_Initialize();
         }
 
         private void flowLayoutPanel1_Paint(object sender, PaintEventArgs e)
         {
+
         }
 
-        private void displayDays()
+        // displayDays can be called for different months / years too
+        protected virtual void displayDays()
         {
             dayContainer.Controls.Clear();
 
-            dayContainer.WrapContents = true;
-            dayContainer.FlowDirection = FlowDirection.LeftToRight;
+            int year = currentDate.Year;
+            int month = currentDate.Month;
 
-            int daysInMonth = DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month);
-            int controlCountPerRow = 7;
+            int daysInMonth = DateTime.DaysInMonth(year, month);
+            DateTime firstDayOfMonth = new DateTime(year, month, 1);
+
+            // Monday = 0 … Sunday = 6
+            int startIndex = (firstDayOfMonth.DayOfWeek == DayOfWeek.Sunday)
+                                ? 6
+                                : (int)firstDayOfMonth.DayOfWeek - 1;
+
+            int totalCells = daysInMonth + startIndex;
+            if (totalCells % 7 != 0)
+                totalCells += 7 - (totalCells % 7);
+
             int margin = 5;
-            int totalSpacing = controlCountPerRow * margin * 2;
-            int controlWidth = (dayContainer.Width - totalSpacing) / controlCountPerRow;
+            int controlCountPerRow = 7;
+            int controlWidth = (dayContainer.Width - (controlCountPerRow * margin * 2)) / controlCountPerRow;
             int controlHeight = 100;
 
+            int dayNumber = 1;   // For current month
+            int _seqIndex = 1;   // Sequential counter for all cells (including filler)
 
-            //~~Create userControlDays~~
-            int _ID = 1;
-            if (daysInMonth == 30) // For 30 days in month it will need 5 additional days to fill the last row
+            for (int i = 0; i < totalCells; i++)
             {
-                for (int day = 1; day <= daysInMonth + 5; day++)
-                {
-                    var dayControl = new userControlDays(day, _ID);
-                    Padding padding = new Padding(margin);
-                    dayControl.Margin = padding;
-                    dayControl.Size = new Size(controlWidth, controlHeight);
+                DateTime cellDate;
+                bool isCurrentMonth = false;
+                int displayDay;
 
-                    dayContainer.Controls.Add(dayControl);
-                    _ID++;
+                if (i >= startIndex && dayNumber <= daysInMonth)
+                {
+                    // Current month
+                    cellDate = new DateTime(year, month, dayNumber);
+                    isCurrentMonth = true;
+                    displayDay = dayNumber;
+                    dayNumber++;
                 }
+                else if (i < startIndex)
+                {
+                    // Previous month filler
+                    DateTime prevMonth = firstDayOfMonth.AddMonths(-1);
+                    int prevMonthDays = DateTime.DaysInMonth(prevMonth.Year, prevMonth.Month);
+                    int day = prevMonthDays - (startIndex - i - 1);
+                    cellDate = new DateTime(prevMonth.Year, prevMonth.Month, day);
+                    displayDay = day;
+                }
+                else
+                {
+                    // Next month filler
+                    int day = i - startIndex - daysInMonth + 1;
+                    DateTime nextMonth = firstDayOfMonth.AddMonths(1);
+                    cellDate = new DateTime(nextMonth.Year, nextMonth.Month, day);
+                    displayDay = day;
+                }
+
+                var dayControl = new userControlDays(
+                    displayDay,   // This must be the number shown in the top-right label
+                    _seqIndex,    // Sequential index in the container
+                    cellDate,
+                    isCurrentMonth
+                );
+
+                dayControl.Margin = new Padding(margin);
+                dayControl.Size = new Size(controlWidth, controlHeight);
+
+                dayContainer.Controls.Add(dayControl);
+
+                _seqIndex++;
             }
-            else // For 31 days in month it will need 4 additional days to fill the last row
-                for (int day = 1; day <= daysInMonth + 4; day++)
-                {
-                    var dayControl = new userControlDays(day, _ID);
-                    Padding padding = new Padding(margin);
-                    dayControl.Margin = padding;
-                    dayControl.Size = new Size(controlWidth, controlHeight);
 
-                    dayContainer.Controls.Add(dayControl);
-                    _ID++;
-                }
         }
 
-        private void InitializeWeekDaysLabels()
+
+
+        protected void InitializeWeekDaysLabels()
         {
             string[] weekdays = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
 
@@ -154,51 +277,81 @@ namespace NodeJSClient.Forms
 
         private void WeekDaysFlowLayout_Paint(object sender, PaintEventArgs e)
         {
-         
-        }
-
-        private void InitilizeDateLabel()
-        {
-            // Ignore Click and hover event
-            Date.Enabled = true;
-            Date.Cursor = Cursors.Default; // remove hand cursor if set
-        
-            //Date.Size = new Size(200, 40);    
-            Date.Font = new Font("Segoe UI", 20, FontStyle.Bold);  
-            Date.TextAlign = ContentAlignment.MiddleLeft;       
-
-            Date.Text = DateTime.Now.ToString("MMMM / yyyy", System.Globalization.CultureInfo.InvariantCulture);
-        }
-
-
-
-
-        private void Date_Click(object sender, EventArgs e)
-        {
-            // Do nothing
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
 
         }
 
-        private void flowLayoutPanel1_Paint_1(object sender, PaintEventArgs e)
-        {
+        //protected virtual void InitilizeDateLabel()
+        //{
+        //    // Ignore Click and hover event
+        //    DateLbl.Enabled = true;
+        //    DateLbl.Cursor = Cursors.Default; // remove hand cursor if set
 
-        }
+        //    //Date.Size = new Size(200, 40);    
+        //    DateLbl.Font = new Font("Segoe UI", 19, FontStyle.Bold);
+        //    DateLbl.TextAlign = ContentAlignment.MiddleLeft;
+
+        //    //DateLbl.Text = currentDate.ToString("MMMM / yyyy", System.Globalization.CultureInfo.InvariantCulture);
+        //}
 
         private void customSwitch1_Load(object sender, EventArgs e)
         {
             // Do nothing
         }
 
-        private void flowLayoutPanel2_Paint(object sender, PaintEventArgs e)
+        private void TopFlayoutPanel_Paint(object sender, PaintEventArgs e)
         {
 
         }
 
-        private void topFlowLayoutPanel4_Load(object sender, EventArgs e)
+        private void TopPanel_Paint(object sender, PaintEventArgs e)
+        {
+            //myPanel_Resize(sender, e);
+        }
+
+        private void PreviousMonthBtn_Click(object sender, EventArgs e)
+        {
+            // Fire the event when button is clicked
+            previousMonthBtnEvent?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void NextMonthBtn_Click(object sender, EventArgs e)
+        {
+            // Fire the event when button is clicked
+            nextMonthBtnEvent?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnPreviousMonthBtnEvent(object sender, EventArgs e)
+        {
+            // Subtract one month
+            currentDate = currentDate.AddMonths(-1);
+
+            // Update the label
+            //DateLbl.Text = currentDate.ToString("MMMM / yyyy", System.Globalization.CultureInfo.InvariantCulture);
+
+            // Optional: update your day display
+            displayDays();
+
+            Console.WriteLine($"Current Month: {currentDate.Month}, Year: {currentDate.Year}");
+        }
+
+
+        private void OnNextMonthBtnEvent(object sender, EventArgs e)
+        {
+            // Add one month
+            currentDate = currentDate.AddMonths(1);
+
+            // Update the label
+            //DateLbl.Text = currentDate.ToString("MMMM / yyyy", System.Globalization.CultureInfo.InvariantCulture);
+
+            // Optional: update your day display
+            displayDays();
+
+            Console.WriteLine($"Current Month: {currentDate.Month}, Year: {currentDate.Year}");
+
+
+        }
+
+        private void DateComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
 
         }

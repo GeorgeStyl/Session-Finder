@@ -88,6 +88,18 @@
     <Compile Include="Forms\CustomSwitch.Designer.cs">
       <DependentUpon>CustomSwitch.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\TestForm.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\TestForm.Designer.cs">
+      <DependentUpon>TestForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\UserDefaultSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\UserDefaultSettings.Designer.cs">
+      <DependentUpon>UserDefaultSettings.cs</DependentUpon>
+    </Compile>
     <Compile Include="MyTcpClient.cs" />
     <Compile Include="Forms\Session.cs">
       <SubType>Form</SubType>
@@ -134,8 +146,14 @@
     <EmbeddedResource Include="Forms\SingInForm.resx">
       <DependentUpon>SingInForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\TestForm.resx">
+      <DependentUpon>TestForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\UserControlDays.resx">
       <DependentUpon>UserControlDays.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\UserDefaultSettings.resx">
+      <DependentUpon>UserDefaultSettings.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

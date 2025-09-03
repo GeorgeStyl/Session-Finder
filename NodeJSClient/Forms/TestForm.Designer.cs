@@ -1,6 +1,6 @@
-﻿namespace NodeJSClient
+﻿namespace NodeJSClient.Forms
 {
-    partial class userControlDays
+    partial class TestForm
     {
         /// <summary> 
         /// Required designer variable.
@@ -13,10 +13,9 @@
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && (components != null))
             {
-                AllInstances.Remove(this);
-                if (components != null) components.Dispose();
+                components.Dispose();
             }
             base.Dispose(disposing);
         }
@@ -29,18 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.SuspendLayout();
-            // 
-            // userControlDays
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            components = new System.ComponentModel.Container();
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.Teal;
-            this.Name = "userControlDays";
-            this.Size = new System.Drawing.Size(146, 112);
-            this.Load += new System.EventHandler(this.UserControlDays_Load);
-            this.ResumeLayout(false);
-
         }
 
         #endregion

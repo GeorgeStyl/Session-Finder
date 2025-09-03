@@ -18,11 +18,12 @@ namespace NodeJSClient.Forms
         public CustomSwitch()
         {
             InitializeComponent();
+
+            GlobalCustomSwitchInstance = this;
         }
 
         private void CustomSwitch_Load(object sender, EventArgs e)
         {
-           
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
