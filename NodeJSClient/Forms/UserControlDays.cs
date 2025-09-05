@@ -9,34 +9,53 @@ namespace NodeJSClient
 {
     public partial class userControlDays : UserControl
     {
-        // Static list to keep track of all instances
+        /****************************************************************************************************
+        *                                      STATIC MEMBERS                                              *
+        ****************************************************************************************************/
+
+        // Static list to keep track of all generated instances of this control
         public static List<userControlDays> AllInstances { get; } = new List<userControlDays>();
 
-        private bool _isSelected = false;   // tracks persistent selection
 
-        public int InstanceNumber { get; private set; }
-        public int DayNum { get; private set; }
-        public Color originalBackColor { get; private set; } = Color.Teal;
-        public bool isInCurrentMonth { get; set; } = true; // The children that dont belong to current month will be set to false by parent form
-        private int dayNum;
+        /****************************************************************************************************
+         *                                      EVENTS                                                      *
+         ****************************************************************************************************/
 
-
-        private Label topRightLabel;
-
-        private userControlDays _activeDayControl = null;
-
-        private Session _parentForm;
+        // Custom event that parent form can subscribe to in order to detect clicks
+        public event EventHandler DayClicked;
 
 
-        public int SeqIndex { get; private set; }           // Sequential index in container (for row calculations)
+        /****************************************************************************************************
+         *                                      PRIVATE FIELDS                                              *
+         ****************************************************************************************************/
+        private bool _isSelected = false;                  // Tracks persistent selection state
+        public bool IsSelected => _isSelected;             // Make it Read - only for the Parent class
+        private int dayNum;                                // Internal storage for day number
+        private Label topRightLabel;                       // Label to show day number (top-right corner)
+        private userControlDays _activeDayControl = null;  // Reference to currently active day control
+        private Session _parentForm;                       // Reference to parent form (Session)
 
-        public bool highlightDay { get; set; } = false;
-        
 
-        protected DateTime dateTime { get; private set; }
-        protected string toStringDay { get; private set; }
-        protected string toStringMonth { get; private set; }
-        protected string toStringYear { get; private set; }
+        /****************************************************************************************************
+         *                                      PUBLIC PROPERTIES                                           *
+         ****************************************************************************************************/
+
+        public int InstanceNumber { get; private set; }    // Unique instance number for this control
+        public int DayNum { get; private set; }           // Day number this control represents
+        public int SeqIndex { get; private set; }         // Sequential index in container (for row calculations)
+        public Color originalBackColor { get; private set; } = Color.Teal; // Default background color
+        public bool isInCurrentMonth { get; set; } = true; // False if this control belongs to filler days
+        public bool highlightDay { get; set; } = false;   // True if this day should be visually highlighted
+
+
+        /****************************************************************************************************
+         *                                      PROTECTED PROPERTIES                                        *
+         ****************************************************************************************************/
+
+        protected DateTime dateTime { get; private set; }   // Full DateTime value for this day
+        protected string toStringDay { get; private set; }  // String representation of the day
+        protected string toStringMonth { get; private set; } // String representation of the month
+        protected string toStringYear { get; private set; } // String representation of the year
 
 
         public userControlDays(int dayNum, int seqIndex, DateTime dateTime, bool isInCurrentMonth, Session parent)
@@ -44,9 +63,9 @@ namespace NodeJSClient
             InitializeComponent();
 
             // Attach events
-            this.MouseClick += UserControlDays_MouseClick;
             this.MouseEnter += DayControl_MouseEnter;
             this.MouseLeave += DayControl_MouseLeave;
+            this.Click += UserControlDays_Click; // attach internal click
 
             // Store the parameters properly
             this.dayNum = dayNum;         // The day number to display
@@ -118,37 +137,45 @@ namespace NodeJSClient
 
         /****************************************************************************************************
          *                                                                                                  *
-         *                         ████████ DAY CONTROL HIGHLIGHTING ████████                               *
+         *                           ████████ DAY CONTROL HIGHLIGHTING & CLICK ████████                     *
          *                                                                                                  *
-         * This set of methods handles visual feedback for day cells in the calendar user control.          *
+         * This region manages visual feedback and selection state for day cells in the calendar.           *
          *                                                                                                  *
          * Methods included:                                                                                *
          *                                                                                                  *
          * 1. highlightControl()                                                                            *
          *    - Highlights the current day in orange.                                                       *
          *    - All other days default to teal.                                                             *
-         *    - Stores the original back color for reset.                                                   *
+         *    - Stores the original back color for reset logic.                                             *
          *                                                                                                  *
          * 2. HighlightRow()                                                                                *
-         *    - Highlights an entire week row (7 days) in light blue.                                       *
-         *    - Only affects days in the current month.                                                     *
-         *    - Filler days (previous/next month) remain gray.                                              *
+         *    - Highlights an entire week row (7 consecutive days) in light blue.                           *
+         *    - Only applies to days in the current month.                                                  *
+         *    - Filler days (outside current month) remain gray.                                            *
          *                                                                                                  *
          * 3. DayControl_MouseEnter()                                                                       *
-         *    - On hover, highlights either:                                                                *
-         *        • A single cell (if CurrentSelection != "MULTIPLE")                                       *
-         *        • The entire row (if CurrentSelection == "MULTIPLE")                                      *
+         *    - Handles temporary hover highlighting based on CurrentSelection mode:                        *
+         *        • ROW       → highlights the entire week row.                                             *
+         *        • MULTIPLE  → highlights only the hovered cell if not already selected.                   *
+         *        • SINGLE    → highlights only the hovered cell (if in current month).                     *
          *                                                                                                  *
          * 4. DayControl_MouseLeave()                                                                       *
-         *    - Resets the cell(s) back to original color:                                                  *
-         *        • Single cell if CurrentSelection != "MULTIPLE"                                           *
-         *        • Entire row if CurrentSelection == "MULTIPLE"                                            *
+         *    - Resets highlighting when the mouse leaves:                                                  *
+         *        • ROW       → resets the entire week row back to original colors.                         *
+         *        • MULTIPLE  → restores violet for selected cells, original color for non-selected.        *
+         *        • SINGLE    → resets only the hovered cell.                                               *
+         *                                                                                                  *
+         * 5. UserControlDays_Click()                                                                       *
+         *    - Toggles **persistent selection** in MULTIPLE mode.                                          *
+         *    - Selected cells are marked violet, unselected revert to originalBackColor.                   *
+         *    - Raises the DayClicked event so the parent form can respond to clicks.                       *
          *                                                                                                  *
          * Notes:                                                                                           *
-         *  - _parentForm.CurrentSelection determines single/multiple selection mode.                       *
-         *  - AllInstances is the collection of all day controls.                                           *
-         *  - originalBackColor preserves the original state to restore after hover.                        *
-         *  - This logic ensures consistent highlighting behavior for both single and multiple selection.   *
+         *  - _parentForm.CurrentSelection decides which mode is active (SINGLE / ROW / MULTIPLE).          *
+         *  - _isSelected tracks persistent state in MULTIPLE mode.                                         *
+         *  - originalBackColor keeps each cell’s original color for restoring after hover.                 *
+         *  - AllInstances holds references to every generated day cell for row-based operations.           *
+         *  - This system ensures consistent, predictable visual feedback in all selection modes.           *
          *                                                                                                  *
          ****************************************************************************************************/
 
@@ -162,6 +189,12 @@ namespace NodeJSClient
                 this.BackColor = Color.Teal;
 
             originalBackColor = this.BackColor;
+        }
+
+        public void onSessionCheckBoxChanged(Object sender, EventArgs e)
+        {
+            Console.WriteLine("Checkbox change state");
+            // Disable highlighted UCDs after CheckBox changed
         }
 
         public void HighlightRow()
@@ -258,14 +291,16 @@ namespace NodeJSClient
             }
         }
 
-        protected void UserControlDays_MouseClick(object sender, EventArgs e)
+        protected void UserControlDays_Click(object sender, EventArgs e)
         {
-
             // Toggle selection
             _isSelected = !_isSelected;
 
             // Update persistent color
             this.BackColor = _isSelected ? Color.Violet : originalBackColor;
+            
+            // Raise custom event so parent knows which control was clicked
+            DayClicked?.Invoke(this, EventArgs.Empty);
         }
 
 

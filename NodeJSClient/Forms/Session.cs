@@ -1,5 +1,6 @@
 ﻿using NodeJSClient;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
@@ -10,54 +11,83 @@ namespace NodeJSClient.Forms
 {
     public partial class Session : Form
     {
-        // =========================
-        // Constants
-        // =========================
-        protected const int MinFormWidth = 400;
-        protected const int VerticalOffset = 5;  // Move window slightly up to avoid taskbar overlap
+        /****************************************************************************************************
+        *                                      CONSTANTS                                                   *
+        ****************************************************************************************************/
 
-        // =========================
-        // Readonly / Services
-        // =========================
+        // Minimum form width allowed
+        protected const int MinFormWidth = 400;
+
+        // Vertical offset to slightly move window above taskbar
+        protected const int VerticalOffset = 5;
+
+
+        /****************************************************************************************************
+         *                                      READONLY / SERVICES                                         *
+         ****************************************************************************************************/
+
+        // Service to fetch day information (injected or initialized elsewhere)
         private readonly DayInfoService _dayInfoService;
+
+        // Initial form size stored for reset or layout calculations
         protected readonly Size InitialFormSize;
 
-        // =========================
-        // State / Fields
-        // =========================
+
+        /****************************************************************************************************
+         *                                      EVENTS                                                      *
+         ****************************************************************************************************/
+
+        // Raised when "Previous Month" button is clicked
+        public event EventHandler previousMonthBtnEvent;
+        private bool _previousMonthBtnFired = false; // Prevents duplicate firing
+
+        // Raised when "Next Month" button is clicked
+        public event EventHandler nextMonthBtnEvent;
+        private bool _nextMonthBtnEvent = false;     // Prevents duplicate firing
+
+
+        /****************************************************************************************************
+         *                                      STATE / FIELDS                                              *
+         ****************************************************************************************************/
+
+        // Date used when changing the date label
         protected DateTime changeDateLbl;
 
+        // Tracks current calendar date (initialized to "today")
         protected DateTime currentDate = new DateTime(
-                                             DateTime.Now.Year,   // current year
-                                             DateTime.Now.Month,  // current month
-                                             DateTime.Now.Day     // current day
+                                             DateTime.Now.Year,
+                                             DateTime.Now.Month,
+                                             DateTime.Now.Day
                                            );
 
-        private ComboBox DateComboBox;
-        private userControlDays _activeDayControl = null;
+        // UI Controls
+        private ComboBox DateComboBox;                  // ComboBox for selecting dates
+        private userControlDays _activeDayControl = null; // Reference to active DayControl
 
-        public event EventHandler previousMonthBtnEvent;
-        private bool _previousMonthBtnFired = false;
+        // Tracks whether any userControlDay (UCD) has been clicked in multiple selection mode
+        private bool isUCDClicked = false;
 
-        public event EventHandler nextMonthBtnEvent;
-        private bool _nextMonthBtnEvent = false;
 
-        // =========================
-        // Properties
-        // =========================
+        /****************************************************************************************************
+         *                                      PROPERTIES                                                  *
+         ****************************************************************************************************/
+
+        // Exposes which selection mode is active based on which checkbox is checked
         public string CurrentSelection
         {
             get
             {
                 if (SingleSelection.Checked) return "SINGLE";
                 if (RowSelection.Checked) return "ROW";
-                return "MULTIPLE";  // fallback, guaranteed at least one checked
+                return "MULTIPLE";  // Fallback, guaranteed at least one is checked
             }
         }
 
-        // =========================
-        // Constructor
-        // =========================
+
+        /****************************************************************************************************
+         *                                      CONSTRUCTOR                                                 *
+         ****************************************************************************************************/
+
         public Session()
         {
             InitializeComponent();
@@ -93,10 +123,6 @@ namespace NodeJSClient.Forms
             }
         }
 
-
-        // =========================
-        // Constructors
-        // =========================
         public Session(DayInfoService service) : this()
         {
             _dayInfoService = service;
@@ -219,10 +245,24 @@ namespace NodeJSClient.Forms
                 dayControl.Margin = new Padding(margin);
                 dayControl.Size = new Size(controlWidth, controlHeight);
 
+                // Subscribe to the custom click event so parent knows which was clicked
+                dayControl.DayClicked += DayControl_DayClicked;
+
                 dayContainer.Controls.Add(dayControl);
                 _seqIndex++;
             }
         }
+
+        // Parent’s handler for clicks
+        private void DayControl_DayClicked(object sender, EventArgs e)
+        {
+            var clickedDay = sender as userControlDays;
+            if (clickedDay == null) return;
+
+            // Example: show which day was clicked
+            MessageBox.Show($"Clicked: {clickedDay.DayNum}");
+        }
+
 
         protected void InitializeWeekDaysLabels()
         {
@@ -279,35 +319,34 @@ namespace NodeJSClient.Forms
 
         /****************************************************************************************************
          *                                                                                                  *
-         *                     ████████ CHECKBOX SELECTION & BUTTON HANDLING ████████                       *
+         *                   ████████ CHECKBOX SELECTION & UPDATE BUTTON HANDLING ████████                  *
          *                                                                                                  *
-         * This set of methods manages the selection mode checkboxes and the "UpdateChanges" button.        *
+         * This region manages the three selection mode checkboxes and the "UpdateChanges" button.          *
          *                                                                                                  *
          * Key behaviors:                                                                                   *
          *                                                                                                  *
-         * 1. SingleSelection_Load / RowSelection_Load / MultipleSelection_Load                             *
-         *    - Initializes the checkbox text and default checked state.                                    *
-         *    - Only SingleSelection is checked by default.                                                 *
+         * 1. *_Load methods (SingleSelection_Load, RowSelection_Load, MultipleSelection_Load)              *
+         *    - Set checkbox labels and default states.                                                     *
+         *    - "Single selection" starts checked by default.                                               *
          *                                                                                                  *
-         * 2. Selection_CheckedChanged                                                                      *
-         *    - Single handler for all three checkboxes (Single, Row, Multiple).                            *
-         *    - Ensures exactly one checkbox is always checked:                                             *
+         * 2. Selection_CheckedChanged (shared handler)                                                     *
+         *    - Guarantees **exactly one checkbox is always checked**:                                      *
          *        • Checking one automatically unchecks the others.                                         *
-         *        • Attempting to uncheck the last remaining checked box restores it immediately.           *
-         *    - Updates the "UpdateChanges" button state:                                                   *
-         *        • Enabled only if MultipleSelection is checked.                                           *
+         *        • Prevents all checkboxes from being unchecked at once.                                   *
+         *    - Updates "UpdateChanges" button state:                                                       *
+         *        • Enabled only when MultipleSelection is checked.                                         *
          *                                                                                                  *
-         * 3. MultipleSelection_CheckedChanged                                                              *
-         *    - Optional separate handler (if used) to enable/disable the button based on MultipleSelection.*
+         * 3. MultipleSelection_CheckedChanged (optional dedicated handler)                                 *
+         *    - Redundant safeguard to toggle UpdateChanges button.                                         *
          *                                                                                                  *
          * 4. UpdateChanges_Click                                                                           *
-         *    - Handles click event for the button.                                                         *
-         *    - Ensures the button state reflects MultipleSelection checkbox.                               *
+         *    - Reinforces button state logic.                                                              *
+         *    - Ensures consistency with MultipleSelection mode.                                            *
          *                                                                                                  *
          * Notes:                                                                                           *
-         *  - All checkbox events can share the Selection_CheckedChanged handler to simplify logic.         *
-         *  - UpdateChanges button is dynamically enabled only for Multiple selection mode.                 *
-         *  - This setup avoids dynamic unsubscribing errors and keeps UI state consistent.                 *
+         *  - A **single handler (Selection_CheckedChanged)** is enough for all checkboxes in most cases.   *
+         *  - "UpdateChanges" button is intentionally restricted to MultipleSelection mode.                 *
+         *  - Logic prevents invalid states and UI desynchronization.                                       *
          *                                                                                                  *
          ****************************************************************************************************/
 
@@ -352,24 +391,37 @@ namespace NodeJSClient.Forms
             }
 
             // Update button state
-            UpdateChanges.Enabled = MultipleSelection.Checked;
+            UpdateChangesButt.Enabled = MultipleSelection.Checked;
         }
 
 
         private void MultipleSelection_CheckedChanged(object sender, EventArgs e)
         {
             // Enable or disable the UpdateChanges button based on the checkbox state
-            UpdateChanges.Enabled = MultipleSelection.Checked;
+            UpdateChangesButt.Enabled = MultipleSelection.Checked;
+
+            // Get all currently selected day controls
+            var selectedDaysList = userControlDays
+                                .AllInstances
+                                .Where(d => d.IsSelected)
+                                .ToList();
+
+            Console.WriteLine("Days chosen:");
+            foreach (userControlDays dayControl in selectedDaysList)
+            {
+                Console.WriteLine(dayControl.DayNum);
+            }
         }
+
 
 
         private void UpdateChanges_Click(object sender, EventArgs e)
         {
             if (MultipleSelection.Checked == true)
             {
-                UpdateChanges.Enabled = true;
+                UpdateChangesButt.Enabled = true;
             }
-            else UpdateChanges.Enabled = false;
+            else UpdateChangesButt.Enabled = false;
         }
     }
 }
