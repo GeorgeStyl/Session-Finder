@@ -409,13 +409,22 @@ namespace NodeJSClient.Forms
 
         private void UpdateChanges_Click(object sender, EventArgs e)
         {
-            // Get the Date property from each selected UserControlDays
-            var dates = SelectedItems.Select(uc => uc.Date);
+            if (SelectedItems.Count == 0)
+            {
+                MessageBox.Show("No items selected. Please select at least one day.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            else
+            {
+                // Get the Date property from each selected UserControlDays
+                var dates = SelectedItems.Select(uc => uc.Date);
 
-            // Join them into a comma-separated string
-            string datesString = string.Join(", ", dates);
+                // Join them into a comma-separated string
+                string datesString = string.Join(", ", dates);
 
-            Console.WriteLine("UpdateChanges button clicked with date times: {0}", datesString);
+                Console.WriteLine("UpdateChanges button clicked with date times: {0}", datesString);
+            }
+               
         }
 
 
