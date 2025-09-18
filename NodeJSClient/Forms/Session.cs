@@ -1,5 +1,6 @@
 ﻿using NodeJSClient;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -62,7 +63,8 @@ namespace NodeJSClient.Forms
 
         // UI Controls
         private ComboBox DateComboBox;                  // ComboBox for selecting dates
-        private userControlDays _activeDayControl = null; // Reference to active DayControl
+        private UserControlDays _activeDayControl = null; // Reference to active DayControl
+        private UserControlDays userControlDays;
 
         // Tracks whether any userControlDay (UCD) has been clicked in multiple selection mode
         private bool isUCDClicked = false;
@@ -83,6 +85,9 @@ namespace NodeJSClient.Forms
             }
         }
 
+        // List to hold the currently selected child controls
+        public List<UserControlDays> SelectedItems { get; private set; }
+
 
         /****************************************************************************************************
          *                                      CONSTRUCTOR                                                 *
@@ -92,6 +97,9 @@ namespace NodeJSClient.Forms
         {
             InitializeComponent();
 
+            // Initialize the selection list
+            SelectedItems = new List<UserControlDays>();
+
             // Capture initial size
             InitialFormSize = this.Size;
 
@@ -99,7 +107,7 @@ namespace NodeJSClient.Forms
             AdjustFormSizeAndPosition();
             this.Load += (s, e) => Session_InitializeLayout();
 
-            // Load events for checkboxes
+            // Load events for check-boxes
             this.Load += SingleSelection_Load;
             this.Load += RowSelection_Load;
             this.Load += MultipleSelection_Load;
@@ -107,7 +115,9 @@ namespace NodeJSClient.Forms
             SingleSelection.CheckedChanged += Selection_CheckedChanged;
             RowSelection.CheckedChanged += Selection_CheckedChanged;
             MultipleSelection.CheckedChanged += Selection_CheckedChanged;
-            MultipleSelection.CheckedChanged += MultipleSelection_CheckedChanged;
+
+            // Enable or disable the UpdateChanges button based on the checkbox state
+            UpdateChangesButt.Enabled = MultipleSelection.Checked;
 
             // Subscribe to month navigation events
             this.previousMonthBtnEvent += (s, e) => _previousMonthBtnFired = true;
@@ -234,7 +244,7 @@ namespace NodeJSClient.Forms
                     displayDay = day;
                 }
 
-                var dayControl = new userControlDays(
+                var dayControl = new UserControlDays(
                     displayDay,
                     _seqIndex,
                     cellDate,
@@ -256,7 +266,7 @@ namespace NodeJSClient.Forms
         // Parent’s handler for clicks
         private void DayControl_DayClicked(object sender, EventArgs e)
         {
-            var clickedDay = sender as userControlDays;
+            var clickedDay = sender as UserControlDays;
             if (clickedDay == null) return;
 
             // Example: show which day was clicked
@@ -267,7 +277,7 @@ namespace NodeJSClient.Forms
         protected void InitializeWeekDaysLabels()
         {
             string[] weekdays = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
-            var firstDay = dayContainer.Controls.OfType<userControlDays>().FirstOrDefault();
+            var firstDay = dayContainer.Controls.OfType<UserControlDays>().FirstOrDefault();
 
             int labelWidth = firstDay != null ? firstDay.Width : 110;
             int labelHeight = 31;
@@ -354,7 +364,7 @@ namespace NodeJSClient.Forms
         private void SingleSelection_Load(object sender, EventArgs e)
         {
             SingleSelection.Text = "Single selection";
-            SingleSelection.Checked = true;   
+            SingleSelection.Checked = true;
         }
 
         private void RowSelection_Load(object sender, EventArgs e)
@@ -371,7 +381,7 @@ namespace NodeJSClient.Forms
         }
 
 
-        // Attach this single handler to all three checkboxes 
+        // Attach this single handler to all three check-boxes 
         private void Selection_CheckedChanged(object sender, EventArgs e)
         {
             CheckBox changed = sender as CheckBox;
@@ -395,33 +405,21 @@ namespace NodeJSClient.Forms
         }
 
 
-        private void MultipleSelection_CheckedChanged(object sender, EventArgs e)
-        {
-            // Enable or disable the UpdateChanges button based on the checkbox state
-            UpdateChangesButt.Enabled = MultipleSelection.Checked;
-
-            // Get all currently selected day controls
-            var selectedDaysList = userControlDays
-                                .AllInstances
-                                .Where(d => d.IsSelected)
-                                .ToList();
-
-            Console.WriteLine("Days chosen:");
-            foreach (userControlDays dayControl in selectedDaysList)
-            {
-                Console.WriteLine(dayControl.DayNum);
-            }
-        }
-
 
 
         private void UpdateChanges_Click(object sender, EventArgs e)
         {
-            if (MultipleSelection.Checked == true)
-            {
-                UpdateChangesButt.Enabled = true;
-            }
-            else UpdateChangesButt.Enabled = false;
+            // Get the Date property from each selected UserControlDays
+            var dates = SelectedItems.Select(uc => uc.Date);
+
+            // Join them into a comma-separated string
+            string datesString = string.Join(", ", dates);
+
+            Console.WriteLine("UpdateChanges button clicked with date times: {0}", datesString);
         }
+
+
+
+
     }
-}
+}   

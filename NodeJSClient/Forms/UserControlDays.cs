@@ -7,14 +7,14 @@ using System.Windows.Forms;
 
 namespace NodeJSClient
 {
-    public partial class userControlDays : UserControl
+    public partial class UserControlDays : UserControl
     {
         /****************************************************************************************************
         *                                      STATIC MEMBERS                                              *
         ****************************************************************************************************/
 
         // Static list to keep track of all generated instances of this control
-        public static List<userControlDays> AllInstances { get; } = new List<userControlDays>();
+        public static List<UserControlDays> AllInstances { get; } = new List<UserControlDays>();
 
 
         /****************************************************************************************************
@@ -29,10 +29,11 @@ namespace NodeJSClient
          *                                      PRIVATE FIELDS                                              *
          ****************************************************************************************************/
         private bool _isSelected = false;                  // Tracks persistent selection state
-        public bool IsSelected => _isSelected;             // Make it Read - only for the Parent class
+       
+
         private int dayNum;                                // Internal storage for day number
         private Label topRightLabel;                       // Label to show day number (top-right corner)
-        private userControlDays _activeDayControl = null;  // Reference to currently active day control
+        private UserControlDays _activeDayControl = null;  // Reference to currently active day control
         private Session _parentForm;                       // Reference to parent form (Session)
 
 
@@ -40,25 +41,24 @@ namespace NodeJSClient
          *                                      PUBLIC PROPERTIES                                           *
          ****************************************************************************************************/
 
-        public int InstanceNumber { get; private set; }    // Unique instance number for this control
-        public int DayNum { get; private set; }           // Day number this control represents
         public int SeqIndex { get; private set; }         // Sequential index in container (for row calculations)
         public Color originalBackColor { get; private set; } = Color.Teal; // Default background color
         public bool isInCurrentMonth { get; set; } = true; // False if this control belongs to filler days
-        public bool highlightDay { get; set; } = false;   // True if this day should be visually highlighted
 
 
         /****************************************************************************************************
          *                                      PROTECTED PROPERTIES                                        *
          ****************************************************************************************************/
 
-        protected DateTime dateTime { get; private set; }   // Full DateTime value for this day
+        public DateTime dateTime { get; private set; }   // Full DateTime value for this day
+        public DateTime Date => dateTime;  // Read-only public property
+
         protected string toStringDay { get; private set; }  // String representation of the day
         protected string toStringMonth { get; private set; } // String representation of the month
         protected string toStringYear { get; private set; } // String representation of the year
 
 
-        public userControlDays(int dayNum, int seqIndex, DateTime dateTime, bool isInCurrentMonth, Session parent)
+        public UserControlDays(int dayNum, int seqIndex, DateTime dateTime, bool isInCurrentMonth, Session parent)
         {
             InitializeComponent();
 
@@ -211,7 +211,7 @@ namespace NodeJSClient
 
         private void DayControl_MouseEnter(object sender, EventArgs e)
         {
-            var control = sender as userControlDays;
+            var control = sender as UserControlDays;
 
             if (control == null) return;
 
@@ -238,7 +238,7 @@ namespace NodeJSClient
 
         private void DayControl_MouseLeave(object sender, EventArgs e)
         {
-            var control = sender as userControlDays;
+            var control = sender as UserControlDays;
 
             if (control == null) return;
 
@@ -278,15 +278,39 @@ namespace NodeJSClient
             // Toggle selection
             _isSelected = !_isSelected;
 
-            // Update persistent color only for multiple selection mode
-            if (_parentForm.CurrentSelection == "MULTIPLE") this.BackColor = _isSelected ? Color.Violet : originalBackColor;
+            if (_parentForm.CurrentSelection == "MULTIPLE")
+            {
+                // Change background color based on selection
+                this.BackColor = _isSelected ? Color.Violet : originalBackColor;
 
-            // Raise custom event so parent knows which control was clicked
-            DayClicked?.Invoke(this, EventArgs.Empty);
+                // Update the multiple selection list
+                if (_isSelected)
+                {
+                    // Add this item to the parent form's selection list if not already added
+                    if (!_parentForm.SelectedItems.Contains(this))
+                    {
+                        _parentForm.SelectedItems.Add(this);
+                    }
+                }
+                else
+                {
+                    // Remove this item from the parent form's selection list
+                    if (_parentForm.SelectedItems.Contains(this))
+                    {
+                        _parentForm.SelectedItems.Remove(this);
+                    }
+                }
+            }
         }
 
+        public void Deselect()
+        {
+            _isSelected = false;
+            this.BackColor = originalBackColor;
 
-
+            if (_parentForm.SelectedItems.Contains(this))
+                _parentForm.SelectedItems.Remove(this);
+        }
 
 
 

@@ -1,6 +1,6 @@
 ﻿namespace NodeJSClient
 {
-    partial class userControlDays
+    partial class UserControlDays
     {
         /// <summary> 
         /// Required designer variable.
@@ -31,12 +31,12 @@
         {
             this.SuspendLayout();
             // 
-            // userControlDays
+            // UserControlDays
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Teal;
-            this.Name = "userControlDays";
+            this.Name = "UserControlDays";
             this.Size = new System.Drawing.Size(146, 112);
             this.Load += new System.EventHandler(this.UserControlDays_Load);
             this.ResumeLayout(false);
