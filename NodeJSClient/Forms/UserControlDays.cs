@@ -179,24 +179,6 @@ namespace NodeJSClient
          *                                                                                                  *
          ****************************************************************************************************/
 
-
-
-        private void highlightControl()
-        {
-            if (this.dayNum == DateTime.Now.Day)
-                this.BackColor = Color.Orange;
-            else
-                this.BackColor = Color.Teal;
-
-            originalBackColor = this.BackColor;
-        }
-
-        public void onSessionCheckBoxChanged(Object sender, EventArgs e)
-        {
-            Console.WriteLine("Checkbox change state");
-            // Disable highlighted UCDs after CheckBox changed
-        }
-
         public void HighlightRow()
         {
             int rowIndex = (this.SeqIndex - 1) / 7; // SeqIndex = sequential index in container
@@ -296,9 +278,9 @@ namespace NodeJSClient
             // Toggle selection
             _isSelected = !_isSelected;
 
-            // Update persistent color
-            this.BackColor = _isSelected ? Color.Violet : originalBackColor;
-            
+            // Update persistent color only for multiple selection mode
+            if (_parentForm.CurrentSelection == "MULTIPLE") this.BackColor = _isSelected ? Color.Violet : originalBackColor;
+
             // Raise custom event so parent knows which control was clicked
             DayClicked?.Invoke(this, EventArgs.Empty);
         }

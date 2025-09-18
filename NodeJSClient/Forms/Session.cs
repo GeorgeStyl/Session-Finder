@@ -260,7 +260,7 @@ namespace NodeJSClient.Forms
             if (clickedDay == null) return;
 
             // Example: show which day was clicked
-            MessageBox.Show($"Clicked: {clickedDay.DayNum}");
+            //MessageBox.Show($"Clicked: {clickedDay.DayNum}");
         }
 
 
