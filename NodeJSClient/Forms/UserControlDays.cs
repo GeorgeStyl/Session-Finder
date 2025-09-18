@@ -21,21 +21,21 @@ namespace NodeJSClient
          *                                      EVENTS                                                      *
          ****************************************************************************************************/
 
-        // Custom event that parent form can subscribe to in order to detect clicks
-        public event EventHandler DayClicked;
+        
+        public event EventHandler DayClicked;               // Custom event that parent form can subscribe to in order to detect clicks
+        
+
 
 
         /****************************************************************************************************
          *                                      PRIVATE FIELDS                                              *
          ****************************************************************************************************/
         private bool _isSelected = false;                  // Tracks persistent selection state
-       
 
         private int dayNum;                                // Internal storage for day number
         private Label topRightLabel;                       // Label to show day number (top-right corner)
         private UserControlDays _activeDayControl = null;  // Reference to currently active day control
         private Session _parentForm;                       // Reference to parent form (Session)
-
 
         /****************************************************************************************************
          *                                      PUBLIC PROPERTIES                                           *
@@ -44,6 +44,7 @@ namespace NodeJSClient
         public int SeqIndex { get; private set; }         // Sequential index in container (for row calculations)
         public Color originalBackColor { get; private set; } = Color.Teal; // Default background color
         public bool isInCurrentMonth { get; set; } = true; // False if this control belongs to filler days
+        public bool resetHighlight = false;              // Flag to reset highlight state (is only updated from parent)
 
 
         /****************************************************************************************************
@@ -61,11 +62,13 @@ namespace NodeJSClient
         public UserControlDays(int dayNum, int seqIndex, DateTime dateTime, bool isInCurrentMonth, Session parent)
         {
             InitializeComponent();
+            this._parentForm = parent;
 
             // Attach events
             this.MouseEnter += DayControl_MouseEnter;
             this.MouseLeave += DayControl_MouseLeave;
             this.Click += UserControlDays_Click; // attach internal click
+
 
             // Store the parameters properly
             this.dayNum = dayNum;         // The day number to display
@@ -91,7 +94,7 @@ namespace NodeJSClient
             // Initialize the label
             InitializeTopRightLabel();
 
-            this._parentForm = parent;
+           
         }
 
 
@@ -179,7 +182,7 @@ namespace NodeJSClient
          *                                                                                                  *
          ****************************************************************************************************/
 
-        public void HighlightRow()
+        private void HighlightRow()
         {
             int rowIndex = (this.SeqIndex - 1) / 7; // SeqIndex = sequential index in container
             int rowStart = rowIndex * 7 + 1;
@@ -225,7 +228,11 @@ namespace NodeJSClient
             else if (_parentForm.CurrentSelection == "MULTIPLE")
             {
                 if (!_isSelected) // only highlight temporarily if not selected
+                {
                     this.BackColor = Color.LightBlue;
+                }
+                    
+                
             }
             else
             {
@@ -279,8 +286,8 @@ namespace NodeJSClient
             _isSelected = !_isSelected;
 
             if (_parentForm.CurrentSelection == "MULTIPLE")
-            {
-                // Change background color based on selection
+            {             
+               // Change background color based on selection
                 this.BackColor = _isSelected ? Color.Violet : originalBackColor;
 
                 // Update the multiple selection list
@@ -303,14 +310,7 @@ namespace NodeJSClient
             }
         }
 
-        public void Deselect()
-        {
-            _isSelected = false;
-            this.BackColor = originalBackColor;
-
-            if (_parentForm.SelectedItems.Contains(this))
-                _parentForm.SelectedItems.Remove(this);
-        }
+ 
 
 
 

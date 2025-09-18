@@ -44,8 +44,9 @@ namespace NodeJSClient.Forms
 
         // Raised when "Next Month" button is clicked
         public event EventHandler nextMonthBtnEvent;
-        private bool _nextMonthBtnEvent = false;     // Prevents duplicate firing
+        private bool _nextMonthBtnEvent = false;   // Prevents duplicate firing
 
+        public event EventHandler ResetHighlightingEvent;  // Custom event to request reset highlight 
 
         /****************************************************************************************************
          *                                      STATE / FIELDS                                              *
@@ -424,7 +425,7 @@ namespace NodeJSClient.Forms
 
                 Console.WriteLine("UpdateChanges button clicked with date times: {0}", datesString);
             }
-               
+
         }
 
 
